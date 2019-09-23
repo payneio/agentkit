@@ -4,6 +4,7 @@ import (
 	"agentkit/pkg/agentkit/datatypes"
 	"agentkit/pkg/agentkit/queues"
 	"fmt"
+	"time"
 )
 
 type LoopbackMind struct {
@@ -23,6 +24,7 @@ func (m *LoopbackMind) Start() {
 				action := &datatypes.Action{
 					Label: `echo.` + percept.Label,
 					Data:  percept.Data,
+					TS:    time.Now(),
 				}
 				m.Actions.Enqueue(action)
 			}
