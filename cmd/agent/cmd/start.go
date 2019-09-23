@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"agentkit/pkg/agentkit"
+	"agentkit/pkg/agentkit/actuators"
 	kactuators "agentkit/pkg/agentkit/actuators"
 	"agentkit/pkg/agentkit/minds"
 	"agentkit/pkg/agentkit/queues"
@@ -62,14 +63,14 @@ to quickly create a Cobra application.`,
 			sensors = append(sensors, sensor)
 		}
 
-		var actuatorConfigs []*agentkit.ActuatorConfig
+		var actuatorConfigs []*actuators.ActuatorConfig
 		err = config.Lookup(`actuators`).Decode(&actuatorConfigs)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(-1)
 		}
 
-		actuators := []agentkit.Actuator{}
+		actuators := []actuators.Actuator{}
 		for _, actuatorConfig := range actuatorConfigs {
 
 			// TODO: types

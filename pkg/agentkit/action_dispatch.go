@@ -1,6 +1,7 @@
 package agentkit
 
 import (
+	"agentkit/pkg/agentkit/actuators"
 	"agentkit/pkg/agentkit/queues"
 	"fmt"
 	"strings"
@@ -8,7 +9,7 @@ import (
 
 type ActionDispatch struct {
 	Actions     queues.ActionQueue
-	actuatorMap map[string]Actuator
+	actuatorMap map[string]actuators.Actuator
 }
 
 func (dispatch *ActionDispatch) Start() {
@@ -40,12 +41,12 @@ func (dispatch *ActionDispatch) Start() {
 
 }
 
-func (dispatch *ActionDispatch) Register(actuator Actuator) {
+func (dispatch *ActionDispatch) Register(actuator actuators.Actuator) {
 	dispatch.actuatorMap[actuator.GetLabel()] = actuator
 	fmt.Println(`Registered actuator: ` + actuator.GetLabel())
 }
 
-func (dispatch *ActionDispatch) RegisterAll(actuators []Actuator) {
+func (dispatch *ActionDispatch) RegisterAll(actuators []actuators.Actuator) {
 	for _, actuator := range actuators {
 		dispatch.Register(actuator)
 	}
@@ -54,6 +55,6 @@ func (dispatch *ActionDispatch) RegisterAll(actuators []Actuator) {
 func NewActionDispatch(actions queues.ActionQueue) *ActionDispatch {
 	return &ActionDispatch{
 		Actions:     actions,
-		actuatorMap: make(map[string]Actuator),
+		actuatorMap: make(map[string]actuators.Actuator),
 	}
 }

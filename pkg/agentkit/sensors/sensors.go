@@ -2,6 +2,7 @@ package sensors
 
 import "agentkit/pkg/agentkit/queues"
 
+// Sensor is anything that can receive or generate data for the agent.
 type Sensor interface {
 	Start()
 }
