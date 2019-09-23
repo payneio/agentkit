@@ -2,13 +2,12 @@ package actuators
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
-	"agentkit/pkg/agentkit/queues"
 	"fmt"
 )
 
 type StdOut struct {
 	Label string
-	In    queues.ActionQueue
+	In    chan *datatypes.Action
 }
 
 func (a *StdOut) GetLabel() string {

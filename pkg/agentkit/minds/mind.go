@@ -2,7 +2,7 @@ package minds
 
 import (
 	"agentkit/pkg/agentkit/belief"
-	"agentkit/pkg/agentkit/queues"
+	"agentkit/pkg/agentkit/datatypes"
 	"fmt"
 )
 
@@ -16,8 +16,8 @@ type Config struct {
 
 func New(
 	config *Config,
-	percepts queues.PerceptQueue,
-	actions queues.ActionQueue,
+	percepts chan *datatypes.Percept,
+	actions chan *datatypes.Action,
 	beliefs *belief.Beliefs) Mind {
 
 	switch config.Type {

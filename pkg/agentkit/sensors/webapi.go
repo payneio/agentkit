@@ -2,7 +2,6 @@ package sensors
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
-	"agentkit/pkg/agentkit/queues"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -14,7 +13,7 @@ import (
 
 type WebAPI struct {
 	Config *Config
-	Out    queues.PerceptQueue
+	Out    chan *datatypes.Percept
 }
 
 func (s *WebAPI) Wait() {
@@ -67,7 +66,7 @@ func (s *WebAPI) Start() {
 							Data:  v,
 							TS:    time.Now(),
 						}
-						sensor.Out.Enqueue(percept)
+						sensor.Out <- percept
 					}
 				}
 
@@ -87,7 +86,7 @@ func (s *WebAPI) Start() {
 					Data:  string(json),
 					TS:    time.Now(),
 				}
-				sensor.Out.Enqueue(percept)
+				sensor.Out <- percept
 
 			} else {
 
@@ -96,7 +95,7 @@ func (s *WebAPI) Start() {
 					Data:  string(body),
 					TS:    time.Now(),
 				}
-				sensor.Out.Enqueue(percept)
+				sensor.Out <- percept
 			}
 
 			s.Wait()
@@ -107,7 +106,7 @@ func (s *WebAPI) Start() {
 	fmt.Println("WebAPI sensor started.")
 }
 
-func NewWebAPISensor(config *Config, out queues.PerceptQueue) *WebAPI {
+func NewWebAPISensor(config *Config, out chan *datatypes.Percept) *WebAPI {
 	return &WebAPI{
 		Config: config,
 		Out:    out,

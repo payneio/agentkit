@@ -5,12 +5,13 @@ import (
 	"agentkit/pkg/agentkit/actuators"
 	kactuators "agentkit/pkg/agentkit/actuators"
 	"agentkit/pkg/agentkit/belief"
+	"agentkit/pkg/agentkit/datatypes"
 	"agentkit/pkg/agentkit/minds"
-	"agentkit/pkg/agentkit/queues"
 	ksensors "agentkit/pkg/agentkit/sensors"
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"cuelang.org/go/cue"
 	"github.com/codegangsta/negroni"
@@ -40,9 +41,10 @@ func (agent *Agent) Spin() {
 }
 
 func New(config *cue.Instance) *Agent {
-	// Queues
-	percepts := queues.NewInMemoryPerceptQueue()
-	actions := queues.NewInMemoryActionQueue()
+
+	// Channels
+	percepts := make(chan *datatypes.Percept)
+	actions := make(chan *datatypes.Action)
 
 	// Sensors
 	var sensorConfigs []*ksensors.Config
@@ -120,5 +122,29 @@ func New(config *cue.Instance) *Agent {
 		Actuators:      actuators,
 		Mind:           mind,
 		ActionDispatch: actionDispatch,
+	}
+}
+
+func listen(name string, subscriber chan string) {
+	for {
+		select {
+		case message := <-subscriber:
+			fmt.Printf("%q: %q\n", name, message)
+		case <-time.After(time.Millisecond):
+		}
+	}
+}
+
+func publish(subscriptions map[chan string][]chan string) {
+	for {
+		for publisher, subscribers := range subscriptions {
+			select {
+			case message := <-publisher:
+				for _, subscriber := range subscribers {
+					subscriber <- message
+				}
+			case <-time.After(time.Millisecond):
+			}
+		}
 	}
 }

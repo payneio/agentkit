@@ -2,13 +2,13 @@ package agentkit
 
 import (
 	"agentkit/pkg/agentkit/actuators"
-	"agentkit/pkg/agentkit/queues"
+	"agentkit/pkg/agentkit/datatypes"
 	"fmt"
 	"strings"
 )
 
 type ActionDispatch struct {
-	Actions     queues.ActionQueue
+	Actions     chan *datatypes.Action
 	actuatorMap map[string]actuators.Actuator
 }
 
@@ -17,24 +17,16 @@ func (dispatch *ActionDispatch) Start() {
 	go func(dispatch *ActionDispatch) {
 
 		for {
+			action := <-dispatch.Actions
 
-			if dispatch.Actions.Peek() != nil {
+			labelSegs := strings.Split(action.Label, `.`)
 
-				action := dispatch.Actions.Dequeue()
-				if action == nil {
-					continue
-				}
-
-				labelSegs := strings.Split(action.Label, `.`)
-
-				actuatorKey := labelSegs[0]
-				actuator := dispatch.actuatorMap[actuatorKey]
-				if actuator == nil {
-					continue
-				}
-				actuator.Actuate(action)
+			actuatorKey := labelSegs[0]
+			actuator := dispatch.actuatorMap[actuatorKey]
+			if actuator == nil {
+				continue
 			}
-
+			actuator.Actuate(action)
 		}
 
 	}(dispatch)
@@ -52,7 +44,7 @@ func (dispatch *ActionDispatch) RegisterAll(actuators []actuators.Actuator) {
 	}
 }
 
-func NewActionDispatch(actions queues.ActionQueue) *ActionDispatch {
+func NewActionDispatch(actions chan *datatypes.Action) *ActionDispatch {
 	return &ActionDispatch{
 		Actions:     actions,
 		actuatorMap: make(map[string]actuators.Actuator),

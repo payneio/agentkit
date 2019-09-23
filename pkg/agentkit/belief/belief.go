@@ -18,8 +18,15 @@ type Beliefs struct {
 	facts map[string]interface{}
 }
 
-func (b *Beliefs) Perceive(p *datatypes.Percept) {
+// Perceive allows the beliefs to be modified based on the perception. Returns
+// whether or not the existing belief has been modified.
+func (b *Beliefs) Perceive(p *datatypes.Percept) (modified bool) {
+	modified = false
+	if b.facts[p.Label] != p.Data {
+		modified = true
+	}
 	b.facts[p.Label] = p.Data
+	return
 }
 
 func (b *Beliefs) MSI() map[string]interface{} {

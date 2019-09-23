@@ -1,7 +1,7 @@
 package sensors
 
 import (
-	"agentkit/pkg/agentkit/queues"
+	"agentkit/pkg/agentkit/datatypes"
 	"fmt"
 )
 
@@ -31,7 +31,7 @@ type Config struct {
 	Measurements []ConfigMeasurements
 }
 
-func New(config *Config, out queues.PerceptQueue) Sensor {
+func New(config *Config, out chan *datatypes.Percept) Sensor {
 
 	switch config.Type {
 	case `webapi`:

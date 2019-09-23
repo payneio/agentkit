@@ -2,7 +2,6 @@ package actuators
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
-	"agentkit/pkg/agentkit/queues"
 	"fmt"
 )
 
@@ -17,7 +16,7 @@ type ActuatorConfig struct {
 	Label string
 }
 
-func New(config *ActuatorConfig, actions queues.ActionQueue) Actuator {
+func New(config *ActuatorConfig, actions chan *datatypes.Action) Actuator {
 
 	switch config.Type {
 	case `stdout`:
