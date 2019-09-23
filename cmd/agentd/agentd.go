@@ -15,8 +15,8 @@ func main() {
 
 	sensors := []agentkit.Sensor{
 		&sensors.WebAPI{
-			URL:  "https://google.com",
-			Rate: 1.0,
+			URL:  `https://api.openweathermap.org/data/2.5/weather?zip=98177,us&units=imperial&APPID=11c411febfa2057a80a18d89ff570383`,
+			Rate: 0.1,
 			Out:  percepts,
 		},
 	}

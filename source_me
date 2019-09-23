@@ -14,3 +14,4 @@ function abs_script_dir_path {
 DIR=$(abs_script_dir_path $0)
 
 export AGENT_ROOT=$DIR
+export PATH=$PATH:$AGENT_ROOT/_output/local
