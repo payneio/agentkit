@@ -1,6 +1,7 @@
 package minds
 
 import (
+	"agentkit/pkg/agentkit/belief"
 	"agentkit/pkg/agentkit/queues"
 	"fmt"
 )
@@ -16,13 +17,15 @@ type Config struct {
 func New(
 	config *Config,
 	percepts queues.PerceptQueue,
-	actions queues.ActionQueue) Mind {
+	actions queues.ActionQueue,
+	beliefs *belief.Beliefs) Mind {
 
 	switch config.Type {
 	case `loopback`:
 		return &LoopbackMind{
 			Percepts: percepts,
 			Actions:  actions,
+			Beliefs:  beliefs,
 		}
 	}
 

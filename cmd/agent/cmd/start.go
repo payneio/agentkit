@@ -1,12 +1,7 @@
 package cmd
 
 import (
-	"agentkit/pkg/agentkit"
-	"agentkit/pkg/agentkit/actuators"
-	kactuators "agentkit/pkg/agentkit/actuators"
-	"agentkit/pkg/agentkit/minds"
-	"agentkit/pkg/agentkit/queues"
-	ksensors "agentkit/pkg/agentkit/sensors"
+	"agentkit/pkg/agentkit/agent"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -46,55 +41,7 @@ to quickly create a Cobra application.`,
 
 		fmt.Println("Agent rezzing.")
 
-		// Queues
-		percepts := queues.NewInMemoryPerceptQueue()
-		actions := queues.NewInMemoryActionQueue()
-
-		// Sensors
-		var sensorConfigs []*ksensors.Config
-		err = config.Lookup(`sensors`).Decode(&sensorConfigs)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
-		}
-		sensors := []ksensors.Sensor{}
-		for _, sensorConfig := range sensorConfigs {
-			sensor := ksensors.New(sensorConfig, percepts)
-			sensors = append(sensors, sensor)
-		}
-
-		// Actuators
-		var actuatorConfigs []*actuators.ActuatorConfig
-		err = config.Lookup(`actuators`).Decode(&actuatorConfigs)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
-		}
-		actuators := []actuators.Actuator{}
-		for _, actuatorConfig := range actuatorConfigs {
-			actuator := kactuators.New(actuatorConfig, actions)
-			actuators = append(actuators, actuator)
-		}
-
-		// ActionDispatch
-		actionDispatch := agentkit.NewActionDispatch(actions)
-		actionDispatch.RegisterAll(actuators)
-
-		// Mind
-		var mindConfig *minds.Config
-		err = config.Lookup(`mind`).Decode(&mindConfig)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
-		}
-		mind := minds.New(mindConfig, percepts, actions)
-
-		agent := &agentkit.Agent{
-			Sensors:        sensors,
-			Actuators:      actuators,
-			Mind:           mind,
-			ActionDispatch: actionDispatch,
-		}
+		agent := agent.New(config)
 
 		agent.Spin()
 

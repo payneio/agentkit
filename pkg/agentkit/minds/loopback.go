@@ -1,6 +1,7 @@
 package minds
 
 import (
+	"agentkit/pkg/agentkit/belief"
 	"agentkit/pkg/agentkit/datatypes"
 	"agentkit/pkg/agentkit/queues"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 type LoopbackMind struct {
 	Percepts queues.PerceptQueue
 	Actions  queues.ActionQueue
+	Beliefs  *belief.Beliefs
 }
 
 func (m *LoopbackMind) Start() {
@@ -20,7 +22,14 @@ func (m *LoopbackMind) Start() {
 	go func(m *LoopbackMind) {
 		for {
 			if m.Percepts.Peek() != nil {
+
+				// Perceive the world
 				percept := m.Percepts.Dequeue()
+
+				// Form a belief about this percept
+				m.Beliefs.Perceive(percept)
+
+				// Take an action based on our new perceptions or beliefs
 				action := &datatypes.Action{
 					Label: `echo.` + percept.Label,
 					Data:  percept.Data,

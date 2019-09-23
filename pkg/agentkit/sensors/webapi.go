@@ -17,35 +17,43 @@ type WebAPI struct {
 	Out    queues.PerceptQueue
 }
 
-func (sensor *WebAPI) Start() {
+func (s *WebAPI) Wait() {
+	sleepDuration := time.Duration((1.0/s.Config.Rate)*1000) * time.Millisecond
+	time.Sleep(sleepDuration)
+}
+
+func (s *WebAPI) doHTTP() ([]byte, objx.Map) {
+	resp, err := http.Get(s.Config.Request.URL)
+	if err != nil {
+		fmt.Println(err)
+		return nil, nil
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+		return nil, nil
+	}
+
+	// Extract JSON
+	var m objx.Map
+	if s.Config.Request.ContentType == `application/json` {
+		m = objx.MustFromJSON(string(body))
+	}
+
+	return body, m
+}
+
+func (s *WebAPI) Start() {
 
 	go func(sensor *WebAPI) {
 
 		for {
 
-			sleepDuration := time.Duration((1.0/sensor.Config.Rate)*1000) * time.Millisecond
-			time.Sleep(sleepDuration)
-
 			fmt.Println("Reading")
 
-			resp, err := http.Get(sensor.Config.Request.URL)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-			defer resp.Body.Close()
-
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-
-			// Extract JSON
-			var m objx.Map
-			if sensor.Config.Request.ContentType == `application/json` {
-				m = objx.MustFromJSON(string(body))
-			}
+			body, jsonData := s.doHTTP()
 
 			if sensor.Config.Measurements != nil {
 
@@ -53,7 +61,7 @@ func (sensor *WebAPI) Start() {
 
 					// JSONPath Extraction
 					if measure.JSONPath != "" {
-						v := m.Get(measure.JSONPath).Data()
+						v := jsonData.Get(measure.JSONPath).Data()
 						percept := &datatypes.Percept{
 							Label: sensor.Config.Label + `.` + measure.Value,
 							Data:  v,
@@ -62,13 +70,12 @@ func (sensor *WebAPI) Start() {
 						sensor.Out.Enqueue(percept)
 					}
 				}
-				continue
-			}
 
-			// No specific measurements are requested to be parsed from the
-			// body, so go ahead and return the whole body.
+			} else if sensor.Config.Request.ContentType == `application/json` {
 
-			if sensor.Config.Request.ContentType == `application/json` {
+				// No specific measurements are requested to be parsed from the
+				// body, so go ahead and return the whole body.
+
 				var jsonBody map[string]interface{}
 				json.Unmarshal(body, &jsonBody)
 				json, err := json.Marshal(jsonBody)
@@ -81,6 +88,7 @@ func (sensor *WebAPI) Start() {
 					TS:    time.Now(),
 				}
 				sensor.Out.Enqueue(percept)
+
 			} else {
 
 				percept := &datatypes.Percept{
@@ -91,9 +99,10 @@ func (sensor *WebAPI) Start() {
 				sensor.Out.Enqueue(percept)
 			}
 
+			s.Wait()
 		}
 
-	}(sensor)
+	}(s)
 
 	fmt.Println("WebAPI sensor started.")
 }
