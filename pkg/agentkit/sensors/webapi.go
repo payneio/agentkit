@@ -1,7 +1,8 @@
 package sensors
 
 import (
-	"agentkit/pkg/agentkit"
+	"agentkit/pkg/agentkit/datatypes"
+	"agentkit/pkg/agentkit/queues"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +14,7 @@ type WebAPI struct {
 	Method      string
 	ContentType string
 	Rate        float64
-	Out         agentkit.PerceptQueue
+	Out         queues.PerceptQueue
 }
 
 func (sensor *WebAPI) Start() {
@@ -38,7 +39,7 @@ func (sensor *WebAPI) Start() {
 				fmt.Println(err)
 			}
 
-			percept := &agentkit.Percept{
+			percept := &datatypes.Percept{
 				Label: `webpage`,
 				Data:  string(body),
 			}

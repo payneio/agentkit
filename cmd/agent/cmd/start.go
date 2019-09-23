@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"agentkit/pkg/agentkit"
-	"agentkit/pkg/agentkit/actuators"
-	"agentkit/pkg/agentkit/sensors"
+	kactuators "agentkit/pkg/agentkit/actuators"
+	"agentkit/pkg/agentkit/minds"
+	"agentkit/pkg/agentkit/queues"
+	ksensors "agentkit/pkg/agentkit/sensors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -41,29 +43,45 @@ to quickly create a Cobra application.`,
 			os.Exit(-1)
 		}
 
-		fmt.Println(config)
+		fmt.Println("Agent rezzing.")
 
-		fmt.Println("MCP initializing.")
+		percepts := queues.NewInMemoryPerceptQueue()
+		actions := queues.NewInMemoryActionQueue()
 
-		percepts := agentkit.NewInMemoryPerceptQueue()
-		actions := agentkit.NewInMemoryActionQueue()
-
-		sensors := []agentkit.Sensor{
-			&sensors.WebAPI{
-				URL:  `https://api.openweathermap.org/data/2.5/weather?zip=98177,us&units=imperial&APPID=11c411febfa2057a80a18d89ff570383`,
-				Rate: 0.1,
-				Out:  percepts,
-			},
+		var sensorConfigs []*ksensors.SensorConfig
+		err = config.Lookup(`sensors`).Decode(&sensorConfigs)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
 		}
 
-		actuators := []agentkit.Actuator{
-			&actuators.StdOut{
-				Label: `echo`,
+		sensors := []ksensors.Sensor{}
+		for _, sensorConfig := range sensorConfigs {
+			// TODO: types
+			sensor := ksensors.New(sensorConfig, percepts)
+			sensors = append(sensors, sensor)
+		}
+
+		var actuatorConfigs []*agentkit.ActuatorConfig
+		err = config.Lookup(`actuators`).Decode(&actuatorConfigs)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
+
+		actuators := []agentkit.Actuator{}
+		for _, actuatorConfig := range actuatorConfigs {
+
+			// TODO: types
+			actuator := &kactuators.StdOut{
+				Label: actuatorConfig.Label,
 				In:    actions,
-			},
+			}
+			actuators = append(actuators, actuator)
 		}
 
-		mind := &agentkit.LoopbackMind{
+		// TODO: types
+		mind := &minds.LoopbackMind{
 			Percepts: percepts,
 			Actions:  actions,
 		}

@@ -1,12 +1,13 @@
 package agentkit
 
 import (
+	"agentkit/pkg/agentkit/queues"
 	"fmt"
 	"strings"
 )
 
 type ActionDispatch struct {
-	Actions     ActionQueue
+	Actions     queues.ActionQueue
 	actuatorMap map[string]Actuator
 }
 
@@ -50,7 +51,7 @@ func (dispatch *ActionDispatch) RegisterAll(actuators []Actuator) {
 	}
 }
 
-func NewActionDispatch(actions ActionQueue) *ActionDispatch {
+func NewActionDispatch(actions queues.ActionQueue) *ActionDispatch {
 	return &ActionDispatch{
 		Actions:     actions,
 		actuatorMap: make(map[string]Actuator),

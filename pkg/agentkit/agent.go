@@ -1,45 +1,31 @@
 package agentkit
 
 import (
+	"agentkit/pkg/agentkit/datatypes"
+	"agentkit/pkg/agentkit/sensors"
 	"fmt"
-	"time"
 )
 
 // Sensor is anything that can receive or generate data for the agent.
-type Sensor interface {
-	Start()
-}
-
 // Actuator is anything that can take actions.
 type Actuator interface {
 	GetLabel() string
-	Actuate(*Action)
+	Actuate(*datatypes.Action)
 }
 
-// Percept is a datatype required for the percept queue
-type Percept struct {
+type ActuatorConfig struct {
 	Label string
-	Data  string
-	TS    time.Time
-}
-
-// Action is an action datatype
-type Action struct {
-	Label string
-	Data  string
-	TS    time.Time
 }
 
 // Agent is an agent
 type Agent struct {
-	Sensors        []Sensor
+	Sensors        []sensors.Sensor
 	Actuators      []Actuator
 	Mind           Mind
 	ActionDispatch *ActionDispatch
 }
 
 func (agent *Agent) Start() {
-
 	agent.ActionDispatch.Start()
 	agent.Mind.Start()
 	fmt.Println(`mind block`)
