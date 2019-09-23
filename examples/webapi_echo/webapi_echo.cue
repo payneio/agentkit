@@ -45,7 +45,7 @@ sensors: [
             { value: "windDirection", jsonPath: "wind.deg", type: "gauge", datatype: "int" },
             { value: "cloudCoverage", jsonPath: "clouds.all", type: "gauge", datatype: "int" },
         ]
-        rate: 1.0 // 1.0 / ( 60 * 10 )
+        rate: 1.0 / ( 60 * 10 )
         cache expire: 300, // 5 min
         filters: {},
     },
