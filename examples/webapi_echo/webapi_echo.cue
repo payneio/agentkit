@@ -1,29 +1,7 @@
-topics: {
-    percepts: { },
-    actions: { },
-}
-
-perceptQueues: [
-    { 
-        label: "default",
-        transport: "inproc",
-    }
-],
-actionQueues: [
-    { 
-        label: "default",
-        transport: "inproc",
-    }
-],
 sensorProcessors: [
     {
         type: "sample"
         rate: 1.0
-        plumbing: {
-            subscribe: "weather.temp"
-            publish: "percepts"
-            transport: "inproc"
-        }
     }
 ],
 sensors: [
@@ -47,18 +25,14 @@ sensors: [
         ]
         rate: 1.0 / ( 60 * 10 )
         cache expire: 300, // 5 min
-        filters: {},
     },
 ],
 actuators: [
     {
         type: "stdout",
         label: "echo",
-		in: "default",
     }
 ],
 mind: {
     type: "loopback"
-    percepts: "percept",
-    actions: "action"
 }
