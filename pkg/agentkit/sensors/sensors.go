@@ -10,29 +10,32 @@ type Sensor interface {
 	Start()
 }
 
-type SensorConfig struct {
-	Type          string
-	URL           string
-	Rate          float64
-	Label         string
-	Method        string
-	ContentType   string
-	ExtractValues []Values
+type ConfigMeasurements struct {
+	Value    string
+	Type     string
+	Datatype string
+	JSONPath string
 }
 
-func New(config *SensorConfig, out queues.PerceptQueue) Sensor {
+type ConfigRequest struct {
+	URL         string
+	Method      string
+	ContentType string
+}
+
+type Config struct {
+	Type         string
+	Request      ConfigRequest
+	Rate         float64
+	Label        string
+	Measurements []ConfigMeasurements
+}
+
+func New(config *Config, out queues.PerceptQueue) Sensor {
 
 	switch config.Type {
 	case `webapi`:
-		return &WebAPI{
-			URL:           config.URL,
-			Rate:          config.Rate,
-			Label:         config.Label,
-			Method:        config.Method,
-			ContentType:   config.ContentType,
-			ExtractValues: config.ExtractValues,
-			Out:           out,
-		}
+		return NewWebAPISensor(config, out)
 	}
 	fmt.Println(`Unknown sensor type.`)
 	return nil

@@ -51,7 +51,7 @@ to quickly create a Cobra application.`,
 		actions := queues.NewInMemoryActionQueue()
 
 		// Sensors
-		var sensorConfigs []*ksensors.SensorConfig
+		var sensorConfigs []*ksensors.Config
 		err = config.Lookup(`sensors`).Decode(&sensorConfigs)
 		if err != nil {
 			fmt.Println(err)
