@@ -1,0 +1,5 @@
+default:
+  image: ubuntu
+
+test:
+  script: make build
