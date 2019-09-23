@@ -46,49 +46,48 @@ to quickly create a Cobra application.`,
 
 		fmt.Println("Agent rezzing.")
 
+		// Queues
 		percepts := queues.NewInMemoryPerceptQueue()
 		actions := queues.NewInMemoryActionQueue()
 
+		// Sensors
 		var sensorConfigs []*ksensors.SensorConfig
 		err = config.Lookup(`sensors`).Decode(&sensorConfigs)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(-1)
 		}
-
 		sensors := []ksensors.Sensor{}
 		for _, sensorConfig := range sensorConfigs {
-			// TODO: types
 			sensor := ksensors.New(sensorConfig, percepts)
 			sensors = append(sensors, sensor)
 		}
 
+		// Actuators
 		var actuatorConfigs []*actuators.ActuatorConfig
 		err = config.Lookup(`actuators`).Decode(&actuatorConfigs)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(-1)
 		}
-
 		actuators := []actuators.Actuator{}
 		for _, actuatorConfig := range actuatorConfigs {
-
-			// TODO: types
-			actuator := &kactuators.StdOut{
-				Label: actuatorConfig.Label,
-				In:    actions,
-			}
+			actuator := kactuators.New(actuatorConfig, actions)
 			actuators = append(actuators, actuator)
 		}
 
-		// TODO: types
-		mind := &minds.LoopbackMind{
-			Percepts: percepts,
-			Actions:  actions,
-		}
-
+		// ActionDispatch
 		actionDispatch := agentkit.NewActionDispatch(actions)
 		actionDispatch.RegisterAll(actuators)
+
+		// Mind
+		var mindConfig *minds.Config
+		err = config.Lookup(`mind`).Decode(&mindConfig)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
+		mind := minds.New(mindConfig, percepts, actions)
 
 		agent := &agentkit.Agent{
 			Sensors:        sensors,
@@ -98,8 +97,6 @@ to quickly create a Cobra application.`,
 		}
 
 		agent.Spin()
-
-		fmt.Println("MCP Ready.")
 
 	},
 }

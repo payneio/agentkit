@@ -1,6 +1,9 @@
 package sensors
 
-import "agentkit/pkg/agentkit/queues"
+import (
+	"agentkit/pkg/agentkit/queues"
+	"fmt"
+)
 
 // Sensor is anything that can receive or generate data for the agent.
 type Sensor interface {
@@ -8,16 +11,21 @@ type Sensor interface {
 }
 
 type SensorConfig struct {
+	Type string
 	URL  string
 	Rate float64
 }
 
 func New(config *SensorConfig, out queues.PerceptQueue) Sensor {
 
-	// TODO: type
-	return &WebAPI{
-		URL:  config.URL,
-		Rate: config.Rate,
-		Out:  out,
+	switch config.Type {
+	case `webapi`:
+		return &WebAPI{
+			URL:  config.URL,
+			Rate: config.Rate,
+			Out:  out,
+		}
 	}
+	fmt.Println(`Unknown sensor type.`)
+	return nil
 }
