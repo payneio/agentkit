@@ -31,10 +31,28 @@ actuators: [
     {
         type: "stdout",
         label: "echo",
+    },
+    {
+        type: "SMS",
+        label: "textmsg"
+        provider: "T-Mobile"
+        number: "2067906707"
     }
 ],
 mind: {
-    // The `loopback` mind does nothing other than echo all percepts to stdout.
-    // Like a parrot.
-    type: "loopback"
+    type: "rules",
+    rules: [
+        {
+            if: "belief.weather.temp > 60 and belief.weather.temp < 76 and belief.weather.humidity > 50 and belief.weather.humidity < 60 and belief.weather.windspeed < 15.0"
+            then: "setBelief(outside.comfortable, true)"
+            else: "setBelief(outside.comfortable, false)"
+        },
+        {
+            if: "belief.outside.comfortable = true"
+            then: "SMS(textmsg, belief.person.paul.phone, `Go Outside!`)"
+        }
+    ],
+    beliefs: [
+        "person.paul.phone = 206-790-6707"
+    ]
 }

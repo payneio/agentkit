@@ -50,8 +50,6 @@ func (s *WebAPI) Start() {
 
 		for {
 
-			fmt.Println("Reading")
-
 			body, jsonData := s.doHTTP()
 
 			if sensor.Config.Measurements != nil {
@@ -61,12 +59,12 @@ func (s *WebAPI) Start() {
 					// JSONPath Extraction
 					if measure.JSONPath != "" {
 						v := jsonData.Get(measure.JSONPath).Data()
-						percept := &datatypes.Percept{
+
+						sensor.Out <- &datatypes.Percept{
 							Label: sensor.Config.Label + `.` + measure.Value,
 							Data:  v,
 							TS:    time.Now(),
 						}
-						sensor.Out <- percept
 					}
 				}
 
@@ -75,27 +73,30 @@ func (s *WebAPI) Start() {
 				// No specific measurements are requested to be parsed from the
 				// body, so go ahead and return the whole body.
 
+				// As JSON if it is.
+
 				var jsonBody map[string]interface{}
 				json.Unmarshal(body, &jsonBody)
 				json, err := json.Marshal(jsonBody)
 				if err != nil {
 					fmt.Println(`Failed marshalling JSON body.`)
 				}
-				percept := &datatypes.Percept{
+
+				sensor.Out <- &datatypes.Percept{
 					Label: sensor.Config.Label + `.` + `json`,
 					Data:  string(json),
 					TS:    time.Now(),
 				}
-				sensor.Out <- percept
 
 			} else {
 
-				percept := &datatypes.Percept{
+				// Otherwise, just text
+
+				sensor.Out <- &datatypes.Percept{
 					Label: sensor.Config.Label + `.` + `webpage`,
 					Data:  string(body),
 					TS:    time.Now(),
 				}
-				sensor.Out <- percept
 			}
 
 			s.Wait()
