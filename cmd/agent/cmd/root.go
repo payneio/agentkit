@@ -1,13 +1,18 @@
 package cmd
 
 import (
+	"agentkit/pkg/agentkit/agent"
+	"agentkit/pkg/agentkit/util"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"os/signal"
+	"path"
+	"strconv"
+	"syscall"
 
+	"cuelang.org/go/cue"
 	"github.com/spf13/cobra"
-
-	homedir "github.com/mitchellh/go-homedir"
-	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -15,10 +20,74 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "agent",
-	Short: "Sentinovo AgentKit Client",
-	Long: `Sentinovo AgentKit Client is a command-line interface (cli) to manage the
-  lifecycle of software agents. With this cli, you can list, start, pause, update,
-  and stop agents.`,
+	Short: "Start a Sentinovo Agent",
+	Long:  `Start a Sentinovo Agent`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		// Read in configuration
+		configPath, _ := cmd.Flags().GetString("config")
+		fmt.Println(`Agent configuration: ` + configPath)
+		configData, err := ioutil.ReadFile(configPath)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		// Compile configuration
+		var r cue.Runtime
+		config, err := r.Compile("agent", configData)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		// Make a name
+		name, _ := cmd.Flags().GetString(`name`)
+		if name == `` {
+			name = agent.GenerateName()
+		}
+		config, _ = config.Fill(name, `_name`)
+		// TODO: check for uniqueness
+
+		// Create PID file
+		workdir, _ := cmd.Flags().GetString(`workdir`)
+		pid := os.Getpid()
+		pidFilepath := path.Join(workdir, name)
+		err = ioutil.WriteFile(pidFilepath, []byte(strconv.Itoa(pid)), 0644)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer os.Remove(pidFilepath)
+		config, _ = config.Fill(workdir, `_workdir`)
+
+		// Assign a free TCP port for agent communication
+		port, _ := cmd.Flags().GetInt(`port`)
+		if port == 0 {
+			port = util.FindFreeTCPPort()
+		}
+		config, _ = config.Fill(port, `_port`)
+		fmt.Printf("Agent %s rezzing.\n", name)
+
+		agent, err := agent.New(config)
+		if err != nil {
+			fmt.Print(err)
+			return
+		}
+
+		// Capture CTRL-C
+		c := make(chan os.Signal)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		go func() {
+			<-c
+			fmt.Println(`Goodbye. --` + name)
+			os.Remove(pidFilepath)
+			os.Exit(-1)
+		}()
+
+		agent.Spin()
+
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -31,37 +100,9 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
 	rootCmd.PersistentFlags().StringP("workdir", "w", "./.agent/", "Path to working directory.")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Search config in home directory with name ".agent" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".agent")
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
+	rootCmd.Flags().StringP("name", "n", "", "Name of the agent. Must be unique. If not specified, one will be created.")
+	rootCmd.Flags().StringP("config", "c", "", "Path to agent configuration.")
+	rootCmd.Flags().IntP("port", "p", 0, "Port to connect agent HTTP-JSON API to.")
+	rootCmd.MarkFlagRequired(`config`)
 }
