@@ -15,3 +15,15 @@ type Action struct {
 	Data  interface{}
 	TS    time.Time
 }
+
+type AgentCoordinator struct {
+	Name        string
+	LastCheckin time.Time
+	Status      string
+}
+
+type Agent struct {
+	Name        string
+	Address     string
+	Coordinator AgentCoordinator
+}
