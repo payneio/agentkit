@@ -8,10 +8,9 @@ import (
 	"agentkit/pkg/agentkit/datatypes"
 	"agentkit/pkg/agentkit/minds"
 	ksensors "agentkit/pkg/agentkit/sensors"
-	"fmt"
+	"agentkit/pkg/agentkit/util"
 	"net/http"
-	"os"
-	"time"
+	"strconv"
 
 	"cuelang.org/go/cue"
 	"github.com/codegangsta/negroni"
@@ -40,7 +39,7 @@ func (agent *Agent) Spin() {
 	select {}
 }
 
-func New(config *cue.Instance) *Agent {
+func New(config *cue.Instance) (*Agent, error) {
 
 	// Channels
 	percepts := make(chan *datatypes.Percept)
@@ -50,8 +49,7 @@ func New(config *cue.Instance) *Agent {
 	var sensorConfigs []*ksensors.Config
 	err := config.Lookup(`sensors`).Decode(&sensorConfigs)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
+		return nil, err
 	}
 	sensors := []ksensors.Sensor{}
 	for _, sensorConfig := range sensorConfigs {
@@ -63,8 +61,7 @@ func New(config *cue.Instance) *Agent {
 	var actuatorConfigs []*actuators.ActuatorConfig
 	err = config.Lookup(`actuators`).Decode(&actuatorConfigs)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
+		return nil, err
 	}
 	actuators := []actuators.Actuator{}
 	for _, actuatorConfig := range actuatorConfigs {
@@ -83,8 +80,7 @@ func New(config *cue.Instance) *Agent {
 	var mindConfig *minds.Config
 	err = config.Lookup(`mind`).Decode(&mindConfig)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
+		return nil, err
 	}
 	mind := minds.New(mindConfig, percepts, actions, beliefs)
 
@@ -93,7 +89,11 @@ func New(config *cue.Instance) *Agent {
 	gmux := mux.NewRouter()
 
 	gmux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "Welcome to the home page!")
+		name, _ := config.Lookup(`_name`).String()
+		data := map[string]interface{}{
+			`name`: name,
+		}
+		r.JSON(w, http.StatusOK, data)
 	})
 
 	gmux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
@@ -114,7 +114,15 @@ func New(config *cue.Instance) *Agent {
 	go func() {
 		n := negroni.Classic()
 		n.UseHandler(gmux)
-		n.Run(":3000")
+
+		// Use the configured port, or find a free one
+		port, _ := config.Lookup(`_port`).Int64()
+		portStr := strconv.Itoa(int(port))
+		if portStr == "" {
+			portStr = strconv.Itoa(util.FindFreeTCPPort())
+		}
+
+		n.Run(`:` + portStr)
 	}()
 
 	return &Agent{
@@ -122,29 +130,5 @@ func New(config *cue.Instance) *Agent {
 		Actuators:      actuators,
 		Mind:           mind,
 		ActionDispatch: actionDispatch,
-	}
-}
-
-func listen(name string, subscriber chan string) {
-	for {
-		select {
-		case message := <-subscriber:
-			fmt.Printf("%q: %q\n", name, message)
-		case <-time.After(time.Millisecond):
-		}
-	}
-}
-
-func publish(subscriptions map[chan string][]chan string) {
-	for {
-		for publisher, subscribers := range subscriptions {
-			select {
-			case message := <-publisher:
-				for _, subscriber := range subscribers {
-					subscriber <- message
-				}
-			case <-time.After(time.Millisecond):
-			}
-		}
-	}
+	}, nil
 }

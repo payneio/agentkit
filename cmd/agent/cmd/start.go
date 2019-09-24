@@ -2,9 +2,14 @@ package cmd
 
 import (
 	"agentkit/pkg/agentkit/agent"
+	"agentkit/pkg/agentkit/util"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/signal"
+	"path"
+	"strconv"
+	"syscall"
 
 	"cuelang.org/go/cue"
 	"github.com/spf13/cobra"
@@ -28,7 +33,7 @@ to quickly create a Cobra application.`,
 		configData, err := ioutil.ReadFile(configPath)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(-1)
+			return
 		}
 
 		// Compile configuration
@@ -36,12 +41,49 @@ to quickly create a Cobra application.`,
 		config, err := r.Compile("agent", configData)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(-1)
+			return
 		}
 
-		fmt.Println("Agent rezzing.")
+		// Make a name
+		name, _ := cmd.Flags().GetString(`name`)
+		if name == `` {
+			name = agent.GenerateName()
+		}
+		config, _ = config.Fill(name, `_name`)
+		// TODO: check for uniqueness
 
-		agent := agent.New(config)
+		// Create PID file
+		workdir, _ := cmd.Flags().GetString(`workdir`)
+		pid := os.Getpid()
+		pidFilepath := path.Join(workdir, name)
+		err = ioutil.WriteFile(pidFilepath, []byte(strconv.Itoa(pid)), 0644)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer os.Remove(pidFilepath)
+		config, _ = config.Fill(workdir, `_workdir`)
+
+		// Assign a free TCP port for agent communication
+		port := util.FindFreeTCPPort()
+		config, _ = config.Fill(port, `_port`)
+		fmt.Printf("Agent %s rezzing.\n", name)
+
+		agent, err := agent.New(config)
+		if err != nil {
+			fmt.Print(err)
+			return
+		}
+
+		// Capture CTRL-C
+		c := make(chan os.Signal)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		go func() {
+			<-c
+			fmt.Println(`Goodbye. --` + name)
+			os.Remove(pidFilepath)
+			os.Exit(-1)
+		}()
 
 		agent.Spin()
 
@@ -61,8 +103,8 @@ func init() {
 	// is called directly, e.g.:
 	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	startCmd.Flags().String("name", "n", "Name of the agent. Must be unique. If not specified, one will be created.")
+	startCmd.Flags().StringP("name", "n", "", "Name of the agent. Must be unique. If not specified, one will be created.")
 	startCmd.Flags().BoolP("register", "r", true, "Register to `agentd` or execute now.")
-	startCmd.Flags().String("config", "c", "Path to agent configuration.")
+	startCmd.Flags().StringP("config", "c", "", "Path to agent configuration.")
 	startCmd.MarkFlagRequired(`config`)
 }

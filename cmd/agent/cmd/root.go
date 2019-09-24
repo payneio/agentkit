@@ -33,7 +33,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.agent.yaml)")
+	rootCmd.PersistentFlags().StringP("workdir", "w", "./.agent/", "Path to working directory.")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
