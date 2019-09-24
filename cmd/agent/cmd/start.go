@@ -65,7 +65,10 @@ to quickly create a Cobra application.`,
 		config, _ = config.Fill(workdir, `_workdir`)
 
 		// Assign a free TCP port for agent communication
-		port := util.FindFreeTCPPort()
+		port, _ := cmd.Flags().GetInt(`port`)
+		if port == 0 {
+			port = util.FindFreeTCPPort()
+		}
 		config, _ = config.Fill(port, `_port`)
 		fmt.Printf("Agent %s rezzing.\n", name)
 
@@ -106,5 +109,6 @@ func init() {
 	startCmd.Flags().StringP("name", "n", "", "Name of the agent. Must be unique. If not specified, one will be created.")
 	startCmd.Flags().BoolP("register", "r", true, "Register to `agentd` or execute now.")
 	startCmd.Flags().StringP("config", "c", "", "Path to agent configuration.")
+	startCmd.Flags().IntP("port", "p", 0, "Port to connect agent HTTP-JSON API to.")
 	startCmd.MarkFlagRequired(`config`)
 }
