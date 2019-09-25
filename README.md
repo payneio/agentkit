@@ -46,3 +46,46 @@ Central on your local machine will result in any running agents connecting to
 it automatically. You can see which agents are connected:
 
 `http://localhost:9200/agents`
+
+## Agent Design
+
+Pretty simple design:
+
+```
+sensor(s) -> mind -> actuators
+```
+
+The main point is that everything should be configurable. This enables
+running wildly different agents by simply starting them with different
+configurations.
+
+## RoadMap
+
+* Makefile needs to detect changed src files
+* Get a proper logger
+* Advertised addresses should try to look up IP addresses.
+* Add a condition-action mind, possibly using `expr`.
+  * Add an email or SMS actuator.
+  * Update the config to send an email or SMS when it is nice out.
+* Add a sensor filter.
+* agent2agent communication.
+* An agent doesn't necessarily need a coordinator... just another agent and 
+  we can use a gossip protocol to find the other data... but maybe not an
+  appropriate design.
+* Add more minds:
+  * subsumption.
+  * rules/production engine.
+  * computational logic (Swift Prolog).
+  * Enable ML models.
+  * Contemplate composing minds, e.g. some video stream object recognition
+    combined with logic.
+* More sensors
+  * POST endpoint (for callbacks from 3rd party services, e.g. Slack)
+  * BLE proximity
+  * Speech input
+  * Video streams
+* More actuators
+  * Arduino/pyyaml/something for a series of servos
+  * Speech
+  * PLC
+* ...
