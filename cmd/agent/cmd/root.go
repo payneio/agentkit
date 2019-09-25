@@ -26,7 +26,6 @@ var rootCmd = &cobra.Command{
 
 		// Read in configuration
 		configPath, _ := cmd.Flags().GetString("config")
-		fmt.Println(`Agent configuration: ` + configPath)
 		configData, err := ioutil.ReadFile(configPath)
 		if err != nil {
 			fmt.Println(err)
@@ -44,9 +43,8 @@ var rootCmd = &cobra.Command{
 		// Make a name
 		name, _ := cmd.Flags().GetString(`name`)
 		if name == `` {
-			name = agent.GenerateName()
+			name = util.GenerateName()
 		}
-		config, _ = config.Fill(name, `_name`)
 		// TODO: check for uniqueness
 
 		// Create PID file
@@ -59,16 +57,24 @@ var rootCmd = &cobra.Command{
 			return
 		}
 		defer os.Remove(pidFilepath)
-		config, _ = config.Fill(workdir, `_workdir`)
 
 		// Assign a free TCP port for agent communication
 		port, _ := cmd.Flags().GetInt(`port`)
 		if port == 0 {
 			port = util.FindFreeTCPPort()
 		}
-		config, _ = config.Fill(port, `_port`)
-		fmt.Printf("Agent %s rezzing.\n", name)
 
+		publicAddress, _ := cmd.Flags().GetString(`public`)
+
+		agentConfig := map[string]interface{}{
+			`name`:          name,
+			`workdir`:       workdir,
+			`port`:          port,
+			`publicAddress`: publicAddress,
+		}
+		config, _ = config.Fill(agentConfig, `_agent`)
+
+		fmt.Printf("Agent %s rezzing.\n", name)
 		agent, err := agent.New(config)
 		if err != nil {
 			fmt.Print(err)
@@ -103,6 +109,8 @@ func init() {
 	rootCmd.PersistentFlags().StringP("workdir", "w", "./.agent/", "Path to working directory.")
 	rootCmd.Flags().StringP("name", "n", "", "Name of the agent. Must be unique. If not specified, one will be created.")
 	rootCmd.Flags().StringP("config", "c", "", "Path to agent configuration.")
+	rootCmd.Flags().String("central", "", "Central address.")
+	rootCmd.Flags().String("public", "", "Public address to advertise to other agents.")
 	rootCmd.Flags().IntP("port", "p", 0, "Port to connect agent HTTP-JSON API to.")
 	rootCmd.MarkFlagRequired(`config`)
 }

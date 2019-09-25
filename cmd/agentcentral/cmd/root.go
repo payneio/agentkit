@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"agentkit/pkg/agentkit/coordinator"
+	"agentkit/pkg/agentkit/central"
 
 	"cuelang.org/go/cue"
 	"github.com/spf13/cobra"
@@ -15,9 +15,9 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "agentcoordinator",
-	Short: "Launch an agent coordinator.",
-	Long:  `Launch an agent coordinator.`,
+	Use:   "agentcentral",
+	Short: "Launch an agent central.",
+	Long:  `Launch an agent central.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		var (
@@ -51,8 +51,8 @@ var rootCmd = &cobra.Command{
 		}
 		config, _ = config.Fill(port, `_port`)
 
-		coordinator := coordinator.New(config)
-		coordinator.Spin()
+		central := central.New(config)
+		central.Spin()
 
 	},
 }

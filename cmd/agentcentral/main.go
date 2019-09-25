@@ -1,6 +1,6 @@
 package main
 
-import "agentkit/cmd/agentcoordinator/cmd"
+import "agentkit/cmd/agentcentral/cmd"
 
 func main() {
 	cmd.Execute()

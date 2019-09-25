@@ -1,6 +1,4 @@
-package agent
-
-import "agentkit/pkg/agentkit/util"
+package util
 
 func GenerateName() string {
 
@@ -1405,7 +1403,7 @@ func GenerateName() string {
 		"Coonskin",
 		"Cooperation",
 		"Coordination",
-		"Coordinator",
+		"Central",
 		"Cop",
 		"Cop-Out",
 		"Cope",
@@ -6808,8 +6806,8 @@ func GenerateName() string {
 		"Zucchini",
 	}
 
-	i := util.RandomIntN(len(words))
-	j := util.RandomIntN(len(words))
+	i := RandomIntN(len(words))
+	j := RandomIntN(len(words))
 
 	return words[i] + words[j]
 

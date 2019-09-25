@@ -5,21 +5,28 @@ import (
 	"agentkit/pkg/agentkit/actuators"
 	kactuators "agentkit/pkg/agentkit/actuators"
 	"agentkit/pkg/agentkit/belief"
+	"agentkit/pkg/agentkit/central"
 	"agentkit/pkg/agentkit/datatypes"
 	"agentkit/pkg/agentkit/minds"
 	ksensors "agentkit/pkg/agentkit/sensors"
-	"agentkit/pkg/agentkit/util"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
-	"strconv"
+	"time"
 
 	"cuelang.org/go/cue"
-	"github.com/codegangsta/negroni"
-	"github.com/gorilla/mux"
-	"github.com/unrolled/render"
+	"github.com/gin-gonic/gin"
 )
 
 // Agent is an agent
 type Agent struct {
+	webd           *gin.Engine
+	Name           string
+	Port           int
+	PublicAddress  string
+	Central        datatypes.Central
 	Sensors        []ksensors.Sensor
 	Actuators      []actuators.Actuator
 	Mind           minds.Mind
@@ -32,6 +39,11 @@ func (agent *Agent) Start() {
 	for _, sensor := range agent.Sensors {
 		sensor.Start()
 	}
+	agent.MaintainCentralConnection()
+
+	go func() {
+		agent.webd.Run(fmt.Sprintf(`:%d`, agent.Port))
+	}()
 }
 
 func (agent *Agent) Spin() {
@@ -39,7 +51,64 @@ func (agent *Agent) Spin() {
 	select {}
 }
 
+func (agent *Agent) MaintainCentralConnection() {
+	go func() {
+		for {
+			agent.NotifyCentral()
+			time.Sleep(centralTTL)
+		}
+	}()
+}
+
+func (agent *Agent) NotifyCentral() {
+
+	if agent.Central.Address == "" {
+		return
+	}
+
+	// Prepare data to POST to Central
+	agentData := datatypes.Agent{
+		Name:    agent.Name,
+		Address: agent.PublicAddress,
+		Central: datatypes.Central{
+			Name:        agent.Central.Name,
+			Address:     agent.Central.Address,
+			LastCheckin: agent.Central.LastCheckin,
+		},
+	}
+	agentJSON, _ := json.Marshal(agentData)
+
+	// Post to Central
+	url := fmt.Sprintf(`http://%s/agents`, agent.Central.Address)
+	result, err := http.Post(url, `application/json`, bytes.NewBuffer(agentJSON))
+	if err != nil {
+		agent.Central.Status = `lost`
+		fmt.Printf(`Failed notifying Central. err = %s\n`, err)
+		return
+	}
+
+	// Central returns the populated Agent datatype. We want to update our
+	// local info on Central using it.
+	data, _ := ioutil.ReadAll(result.Body)
+	_ = json.Unmarshal(data, &agentData)
+	agent.Central.Name = agentData.Central.Name
+	agent.Central.Status = `healthy`
+	agent.Central.LastCheckin = agentData.Central.LastCheckin
+
+	fmt.Println(`Notified Central.`)
+}
+
 func New(config *cue.Instance) (*Agent, error) {
+
+	// Agent data
+	var agentData *Agent
+	err := config.Lookup(`_agent`).Decode(&agentData)
+	if err != nil {
+		return nil, err
+	}
+	if agentData.PublicAddress == "" {
+		agentData.PublicAddress = fmt.Sprintf(`localhost:%d`, agentData.Port)
+	}
 
 	// Channels
 	percepts := make(chan *datatypes.Percept)
@@ -47,7 +116,7 @@ func New(config *cue.Instance) (*Agent, error) {
 
 	// Sensors
 	var sensorConfigs []*ksensors.Config
-	err := config.Lookup(`sensors`).Decode(&sensorConfigs)
+	err = config.Lookup(`sensors`).Decode(&sensorConfigs)
 	if err != nil {
 		return nil, err
 	}
@@ -84,51 +153,42 @@ func New(config *cue.Instance) (*Agent, error) {
 	}
 	mind := minds.New(mindConfig, percepts, actions, beliefs)
 
-	// JSON Web API
-	r := render.New()
-	gmux := mux.NewRouter()
+	// Central connection
+	centralAddress, _ := config.Lookup(`_central`).String()
+	if centralAddress == "" {
+		// If no address, at least check localhost, known port.
+		// TODO: Optionally turn this localhost checking off. Nice to
+		// have it on unless resource restraints require it to be off.
+		centralAddress = fmt.Sprintf(`localhost:%d`, central.DefaultPort)
+	}
 
-	gmux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		name, _ := config.Lookup(`_name`).String()
-		data := map[string]interface{}{
-			`name`: name,
-		}
-		r.JSON(w, http.StatusOK, data)
-	})
-
-	gmux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
-		var response = map[string]string{"health": "ok"}
-		r.JSON(w, http.StatusOK, response)
-	})
-
-	gmux.HandleFunc("/version", func(w http.ResponseWriter, req *http.Request) {
-		var response = map[string]string{"version": "0.0.1"}
-		r.JSON(w, http.StatusOK, response)
-	})
-
-	gmux.HandleFunc("/beliefs", func(w http.ResponseWriter, req *http.Request) {
-		var response = beliefs.MSI()
-		r.JSON(w, http.StatusOK, response)
-	})
-
-	go func() {
-		n := negroni.Classic()
-		n.UseHandler(gmux)
-
-		// Use the configured port, or find a free one
-		port, _ := config.Lookup(`_port`).Int64()
-		portStr := strconv.Itoa(int(port))
-		if portStr == "" {
-			portStr = strconv.Itoa(util.FindFreeTCPPort())
-		}
-
-		n.Run(`:` + portStr)
-	}()
-
-	return &Agent{
+	agent := &Agent{
+		Name:           agentData.Name,
+		Port:           agentData.Port,
+		PublicAddress:  agentData.PublicAddress,
 		Sensors:        sensors,
 		Actuators:      actuators,
 		Mind:           mind,
 		ActionDispatch: actionDispatch,
-	}, nil
+		Central: datatypes.Central{
+			Address: centralAddress,
+		},
+	}
+
+	// JSON Web API
+	r := gin.Default()
+
+	// Turn off GIN logging
+	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = ioutil.Discard
+
+	// Set Routes
+	r.GET("/", agent.WebRoot)
+	r.GET("/health", agent.WebHealth)
+	r.GET("/beliefs", agent.WebListBeliefs)
+
+	// Put web server on agent
+	agent.webd = r
+
+	return agent, nil
 }

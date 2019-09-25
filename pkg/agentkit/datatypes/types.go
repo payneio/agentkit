@@ -4,26 +4,27 @@ import "time"
 
 // Percept is a datatype required for the percept queue
 type Percept struct {
-	Label string
-	Data  interface{}
-	TS    time.Time
+	Label string      `json:"label"`
+	Data  interface{} `json:"data"`
+	TS    time.Time   `json:"ts"`
 }
 
 // Action is an action datatype
 type Action struct {
-	Label string
-	Data  interface{}
-	TS    time.Time
+	Label string      `json:"label"`
+	Data  interface{} `json:"data"`
+	TS    time.Time   `json:"ts"`
 }
 
-type AgentCoordinator struct {
-	Name        string
-	LastCheckin time.Time
-	Status      string
+type Central struct {
+	Name        string    `json:"central"`
+	Address     string    `json:"address"`
+	LastCheckin time.Time `json:"lastCheckin"`
+	Status      string    `json:"status"`
 }
 
 type Agent struct {
-	Name        string
-	Address     string
-	Coordinator AgentCoordinator
+	Name    string  `json:"name"`
+	Address string  `json:"address"`
+	Central Central `json:"central"`
 }

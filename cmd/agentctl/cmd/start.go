@@ -42,7 +42,7 @@ var startCmd = &cobra.Command{
 		// Make a name
 		name, _ := cmd.Flags().GetString(`name`)
 		if name == `` {
-			name = agent.GenerateName()
+			name = util.GenerateName()
 		}
 		config, _ = config.Fill(name, `_name`)
 		// TODO: check for uniqueness
