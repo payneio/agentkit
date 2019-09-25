@@ -60,14 +60,14 @@ func (m *CAMind) EvalCondition(expression string) bool {
 
 	// Prepare the environment for condition evaluation.
 	// This is done on every condition to allow for simple cascading rules.
-	type Env struct {
-		Belief: func(k string) interface{} {
+	env := map[string]interface{}{
+		`Belief`: func(k string) interface{} {
 			return m.Beliefs.Get(k)
 		},
 	}
 
 	// Evaluate
-	out, err := expr.Eval(expression, expr.Env(&Env{}))
+	out, err := expr.Eval(expression, expr.Env(env))
 	if err != nil {
 		fmt.Printf("Could not evaluate condition expression. err = %v\n", err)
 	}

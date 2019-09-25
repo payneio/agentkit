@@ -7,8 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
-	"path"
-	"strconv"
 	"syscall"
 
 	"cuelang.org/go/cue"
@@ -48,15 +46,15 @@ var rootCmd = &cobra.Command{
 		// TODO: check for uniqueness
 
 		// Create PID file
-		workdir, _ := cmd.Flags().GetString(`workdir`)
-		pid := os.Getpid()
-		pidFilepath := path.Join(workdir, name)
-		err = ioutil.WriteFile(pidFilepath, []byte(strconv.Itoa(pid)), 0644)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer os.Remove(pidFilepath)
+		// workdir, _ := cmd.Flags().GetString(`workdir`)
+		// pid := os.Getpid()
+		// pidFilepath := path.Join(workdir, name)
+		// err = ioutil.WriteFile(pidFilepath, []byte(strconv.Itoa(pid)), 0644)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	return
+		// }
+		// defer os.Remove(pidFilepath)
 
 		// Assign a free TCP port for agent communication
 		port, _ := cmd.Flags().GetInt(`port`)
@@ -65,12 +63,16 @@ var rootCmd = &cobra.Command{
 		}
 
 		publicAddress, _ := cmd.Flags().GetString(`public`)
+		centralAddress, _ := cmd.Flags().GetString(`central`)
 
 		agentConfig := map[string]interface{}{
-			`name`:          name,
-			`workdir`:       workdir,
+			`name`: name,
+			//`workdir`:       workdir,
 			`port`:          port,
 			`publicAddress`: publicAddress,
+			`central`: map[string]interface{}{
+				`address`: centralAddress,
+			},
 		}
 		config, _ = config.Fill(agentConfig, `_agent`)
 
@@ -87,7 +89,7 @@ var rootCmd = &cobra.Command{
 		go func() {
 			<-c
 			fmt.Println(`Goodbye. --` + name)
-			os.Remove(pidFilepath)
+			//os.Remove(pidFilepath)
 			os.Exit(-1)
 		}()
 

@@ -156,12 +156,11 @@ func New(config *cue.Instance) (*Agent, error) {
 	mind := minds.New(mindConfig, percepts, actions, beliefs)
 
 	// Central connection
-	centralAddress, _ := config.Lookup(`_central`).String()
-	if centralAddress == "" {
+	if agentData.Central.Address == "" {
 		// If no address, at least check localhost, known port.
 		// TODO: Optionally turn this localhost checking off. Nice to
 		// have it on unless resource restraints require it to be off.
-		centralAddress = fmt.Sprintf(`localhost:%d`, central.DefaultPort)
+		agentData.Central.Address = fmt.Sprintf(`localhost:%d`, central.DefaultPort)
 	}
 
 	agent := &Agent{
@@ -172,9 +171,7 @@ func New(config *cue.Instance) (*Agent, error) {
 		Actuators:      actuators,
 		Mind:           mind,
 		ActionDispatch: actionDispatch,
-		Central: datatypes.Central{
-			Address: centralAddress,
-		},
+		Central:        agentData.Central,
 	}
 
 	// JSON Web API
