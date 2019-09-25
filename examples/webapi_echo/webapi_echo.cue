@@ -24,7 +24,6 @@ sensors: [
             { value: "cloudCoverage", jsonPath: "clouds.all", type: "gauge", datatype: "int" },
         ]
         rate: 1.0 / ( 60 * 10 )
-        cache expire: 300, // 5 min
     },
 ],
 actuators: [

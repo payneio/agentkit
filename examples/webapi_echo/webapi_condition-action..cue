@@ -24,7 +24,6 @@ sensors: [
             { value: "cloudCoverage", jsonPath: "clouds.all", type: "gauge", datatype: "int" },
         ]
         rate: 1.0 / ( 60 * 10 )
-        cache expire: 300, // 5 min
     },
 ],
 actuators: [
@@ -40,7 +39,7 @@ actuators: [
     }
 ],
 mind: {
-    type: "rules",
+    type: "condition-action",
     rules: [
         {
             if: "belief.weather.temp > 60 and belief.weather.temp < 76 and belief.weather.humidity > 50 and belief.weather.humidity < 60 and belief.weather.windspeed < 15.0"

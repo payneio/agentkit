@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.46.3 // indirect
 	cuelang.org/go v0.0.11
 	github.com/alecthomas/units v0.0.0-20190910110746-680d30ca3117 // indirect
+	github.com/antonmedv/expr v1.1.4
 	github.com/codegangsta/negroni v1.0.0
 	github.com/coreos/bbolt v1.3.3 // indirect
 	github.com/coreos/etcd v3.3.15+incompatible // indirect

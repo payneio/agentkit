@@ -22,6 +22,18 @@ func New(
 	beliefs *belief.Beliefs) Mind {
 
 	switch config.Type {
+	case `condition-action`:
+
+		// TODO: pull rules out of config
+
+		var rules []CARule
+
+		return &CAMind{
+			Percepts: percepts,
+			Actions:  actions,
+			Beliefs:  beliefs,
+			Rules:    rules,
+		}
 	case `loopback`:
 		return &LoopbackMind{
 			Percepts: percepts,
