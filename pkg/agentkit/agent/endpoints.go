@@ -25,7 +25,6 @@ func (a *Agent) WebHealth(gctx *gin.Context) {
 	gctx.JSON(200, gin.H{"status": "ok"})
 }
 
-func (a *Agent) WebListBeliefs(gctx *gin.Context) {
-	//gctx.JSON(200, a.Mind.Belief.MSI())
-	gctx.JSON(200, a)
+func (a *Agent) WebReadMind(gctx *gin.Context) {
+	gctx.JSON(200, a.Mind.GetBeliefs().MSI())
 }

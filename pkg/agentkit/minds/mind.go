@@ -8,6 +8,7 @@ import (
 
 type Mind interface {
 	Start()
+	GetBeliefs() *belief.Beliefs
 }
 
 type Config struct {

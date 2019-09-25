@@ -185,7 +185,7 @@ func New(config *cue.Instance) (*Agent, error) {
 	// Set Routes
 	r.GET("/", agent.WebRoot)
 	r.GET("/health", agent.WebHealth)
-	r.GET("/beliefs", agent.WebListBeliefs)
+	r.GET("/mind", agent.WebReadMind)
 
 	// Put web server on agent
 	agent.webd = r

@@ -13,6 +13,10 @@ type LoopbackMind struct {
 	Beliefs  *belief.Beliefs
 }
 
+func (m *LoopbackMind) GetBeliefs() *belief.Beliefs {
+	return m.Beliefs
+}
+
 func (m *LoopbackMind) Start() {
 
 	fmt.Println(`Loopback mind is waking.`)
