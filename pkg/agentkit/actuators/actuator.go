@@ -26,6 +26,6 @@ func New(config *ActuatorConfig, actions chan *datatypes.Action) Actuator {
 		}
 	}
 
-	fmt.Println(`Unknown actuator type.`)
+	fmt.Println(`Unknown actuator type: ` + config.Type)
 	return nil
 }

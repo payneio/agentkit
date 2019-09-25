@@ -29,6 +29,15 @@ func (b *Beliefs) Perceive(p *datatypes.Percept) (modified bool) {
 	return
 }
 
+func (b *Beliefs) Get(key string) interface{} {
+	val, ok := b.facts[key]
+	if ok {
+		return val
+	} else {
+		return nil
+	}
+}
+
 func (b *Beliefs) MSI() map[string]interface{} {
 	return b.facts
 }

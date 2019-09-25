@@ -39,6 +39,7 @@ func (m *CAMind) Start() {
 			_ = m.Beliefs.Perceive(percept)
 
 			// Eval actions based on whether condition is met or not
+			fmt.Println(`Received percept: ` + percept.Label)
 			for _, rule := range m.Rules {
 				if m.EvalCondition(rule.If) {
 					m.EvalAction(rule.Then)
@@ -55,19 +56,26 @@ func (m *CAMind) Start() {
 
 func (m *CAMind) EvalCondition(expression string) bool {
 
-	// TODO: Put all stuff needed to evaluate an expression in this (or a struct)
-	var env map[string]interface{}
+	fmt.Println(`Evaluating rule expression: ` + expression)
+
+	// Prepare the environment for condition evaluation.
+	// This is done on every condition to allow for simple cascading rules.
+	type Env struct {
+		Belief: func(k string) interface{} {
+			return m.Beliefs.Get(k)
+		},
+	}
 
 	// Evaluate
-	out, err := expr.Eval(expression, env)
+	out, err := expr.Eval(expression, expr.Env(&Env{}))
 	if err != nil {
-		fmt.Printf(`Could not evaluate condition expression. err = %v\n`, err)
+		fmt.Printf("Could not evaluate condition expression. err = %v\n", err)
 	}
 
 	// Make sure result is a boolean
 	yesno, ok := out.(bool)
 	if !ok {
-		fmt.Printf(`Condition did not evaluate to boolean. expression = %s\n`, expression)
+		fmt.Printf("Condition did not evaluate to boolean. expression = %s\n", expression)
 	}
 
 	return yesno
@@ -79,6 +87,8 @@ func (m *CAMind) EvalAction(expression string) {
 	}
 
 	// TODO: Create some sort of action language
+
+	fmt.Printf("Action needs to be evaluated: %s\n", expression)
 
 	// Take an action
 	// action := &datatypes.Action{

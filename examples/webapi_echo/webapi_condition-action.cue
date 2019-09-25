@@ -28,11 +28,11 @@ sensors: [
 ],
 actuators: [
     {
-        type: "stdout",
-        label: "echo",
+        type: "stdout"
+        label: "echo"
     },
     {
-        type: "SMS",
+        type: "SMS"
         label: "textmsg"
         provider: "T-Mobile"
         number: "2067906707"
@@ -42,12 +42,12 @@ mind: {
     type: "condition-action",
     rules: [
         {
-            if: "belief.weather.temp > 60 and belief.weather.temp < 76 and belief.weather.humidity > 50 and belief.weather.humidity < 60 and belief.weather.windspeed < 15.0"
+            if: "Belief('weather.temp') > 60 and Belief('weather.temp') < 76" //  and belief(weather.humidity) > 50 and belief(weather.humidity) < 60 and belief(weather.windspeed) < 15.0
             then: "setBelief(outside.comfortable, true)"
             else: "setBelief(outside.comfortable, false)"
         },
         {
-            if: "belief.outside.comfortable = true"
+            if: "Belief('outside.comfortable') == true"
             then: "SMS(textmsg, belief.person.paul.phone, `Go Outside!`)"
         }
     ],

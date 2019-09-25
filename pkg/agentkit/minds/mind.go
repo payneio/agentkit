@@ -12,7 +12,8 @@ type Mind interface {
 }
 
 type Config struct {
-	Type string
+	Type  string
+	Rules []CARule
 }
 
 func New(
@@ -23,16 +24,11 @@ func New(
 
 	switch config.Type {
 	case `condition-action`:
-
-		// TODO: pull rules out of config
-
-		var rules []CARule
-
 		return &CAMind{
 			Percepts: percepts,
 			Actions:  actions,
 			Beliefs:  beliefs,
-			Rules:    rules,
+			Rules:    config.Rules,
 		}
 	case `loopback`:
 		return &LoopbackMind{

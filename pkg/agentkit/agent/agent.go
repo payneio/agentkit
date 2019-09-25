@@ -135,7 +135,9 @@ func New(config *cue.Instance) (*Agent, error) {
 	actuators := []actuators.Actuator{}
 	for _, actuatorConfig := range actuatorConfigs {
 		actuator := kactuators.New(actuatorConfig, actions)
-		actuators = append(actuators, actuator)
+		if actuator != nil {
+			actuators = append(actuators, actuator)
+		}
 	}
 
 	// ActionDispatch
