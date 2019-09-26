@@ -21,10 +21,6 @@ $(LOCAL_DIST_DIR)/agentcentral: $(LOCAL_DIST_DIR)
 .PHONY: build
 build: $(LOCAL_DIST_DIR)/agent $(LOCAL_DIST_DIR)/agentcentral
 
-.PHONY: run
-run: $(LOCAL_DIST_DIR)/$(EXECUTABLE)
-	$(LOCAL_DIST_DIR)/$(EXECUTABLE)
-
 .PHONY: $(PLATFORMS)
 $(PLATFORMS): $(DIST_DIR)
     GOOS=$(OS) GOARCH=amd64 go build -o $(DIST_DIR)/agent-$(OS)-amd64 ./cmd/agent

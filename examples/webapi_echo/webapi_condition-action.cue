@@ -42,13 +42,13 @@ mind: {
     type: "condition-action",
     rules: [
         {
-            if: "Belief('weather.temp') > 60 and Belief('weather.temp') < 76" //  and belief(weather.humidity) > 50 and belief(weather.humidity) < 60 and belief(weather.windspeed) < 15.0
-            then: "setBelief(outside.comfortable, true)"
-            else: "setBelief(outside.comfortable, false)"
+            if: "beliefs['weather.temp'] > 60 and beliefs['weather.temp'] < 76" //  and belief(weather.humidity) > 50 and belief(weather.humidity) < 60 and belief(weather.windspeed) < 15.0
+            then: "setBelief('outside.comfortable', true)"
+            else: "setBelief('outside.comfortable', false)"
         },
         {
-            if: "Belief('outside.comfortable') == true"
-            then: "SMS(textmsg, belief.person.paul.phone, `Go Outside!`)"
+            if: "beliefs['outside.comfortable'] == true"
+            then: "SMS(textmsg, beliefs.person.paul.phone, 'Go Outside!')"
         }
     ],
     beliefs: [

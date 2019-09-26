@@ -63,10 +63,13 @@ configurations.
 
 * Makefile needs to detect changed src files
 * Get a proper logger
-* Advertised addresses should try to look up IP addresses.
 * Add a condition-action mind, possibly using `expr`.
   * Add an email or SMS actuator.
   * Update the config to send an email or SMS when it is nice out.
+  * More rich CA action specification
+    * a syntax for executing actions
+    * belief changes need to understand whether it just changed now, or 
+      has been the same in previous cycles... or handle that with a percept
 * Add a sensor filter.
 * agent2agent communication.
 * An agent doesn't necessarily need a coordinator... just another agent and 

@@ -2,7 +2,10 @@ package minds
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
+	"encoding/json"
 	"fmt"
+
+	"regexp"
 
 	"github.com/antonmedv/expr"
 )
@@ -55,16 +58,17 @@ func (m *CAMind) Start() {
 
 func (m *CAMind) EvalCondition(expression string) bool {
 
-	fmt.Println(`Evaluating rule expression: ` + expression)
-
 	// Prepare the environment for condition evaluation.
 	// This is done on every condition to allow for simple cascading rules.
 	env := map[string]interface{}{
 		`beliefs`: m.Beliefs.MSI(),
+		`setBelief`: func(key string, value interface{}) {
+			m.Beliefs.Set(key, value)
+		},
 	}
-	fmt.Printf("%#v", env)
+
 	// Evaluate
-	out, err := expr.Eval(expression, expr.Env(env))
+	out, err := expr.Eval(expression, env)
 	if err != nil {
 		fmt.Printf("Could not evaluate condition expression. err = %v\n", err)
 	}
@@ -83,9 +87,24 @@ func (m *CAMind) EvalAction(expression string) {
 		return
 	}
 
-	// TODO: Create some sort of action language
-
 	fmt.Printf("Action needs to be evaluated: %s\n", expression)
+
+	// TODO: Create some sort of action language
+	// Simple one for now as an example:
+
+	// Parse Action-string for `setBelief` actions
+	re := regexp.MustCompile(`setBelief\([\s']*([^']*)[\s']*,\s*(.*)\s*\)`)
+	matches := re.FindAllStringSubmatch(expression, -1)
+	for _, match := range matches {
+
+		key, sval := match[1], match[2]
+
+		// Basic JSON-ish typing of the value
+		var val interface{}
+		json.Unmarshal([]byte(sval), &val)
+
+		m.Beliefs.Set(key, val)
+	}
 
 	// Take an action
 	// action := &datatypes.Action{

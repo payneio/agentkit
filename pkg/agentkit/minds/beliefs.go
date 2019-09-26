@@ -12,6 +12,7 @@ type BeliefsConfig struct {
 type Beliefs interface {
 	Perceive(*datatypes.Percept) bool
 	Get(string) interface{}
+	Set(string, interface{})
 	MSI() map[string]interface{}
 }
 
@@ -42,6 +43,10 @@ func (b *BasicBeliefs) Get(key string) interface{} {
 	} else {
 		return nil
 	}
+}
+
+func (b *BasicBeliefs) Set(key string, val interface{}) {
+	b.facts[key] = val
 }
 
 func (b *BasicBeliefs) MSI() map[string]interface{} {
