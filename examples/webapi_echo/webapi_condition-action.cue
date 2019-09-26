@@ -42,7 +42,37 @@ mind: {
     type: "condition-action",
     rules: [
         {
-            if: "beliefs['weather.temp'] > 60 and beliefs['weather.temp'] < 76" //  and belief(weather.humidity) > 50 and belief(weather.humidity) < 60 and belief(weather.windspeed) < 15.0
+            if: "beliefs['weather.temp'] > 76"
+            then: "setBelief('outside.hot', true)"
+            else: "setBelief('outside.hot, false)"
+        },
+        {
+            if: "beliefs['weather.temp'] < 60"
+            then: "setBelief('outside.cold', true)"
+            else: "setBelief('outside.cold, false)"
+        },
+        {
+            if: "not(beliefs['outside.cold'] or beliefs['outside.hot'])"
+            then: "setBelief('outside.niceTemp', true)"
+            else: "setBelief('outside.niceTemp, false)"
+        },
+        {
+            if: "beliefs['weather.windSpeed'] > 15.0"
+            then: "setBelief('outside.windy', true)"
+            else: "setBelief('outside.windy', false)"
+        },
+        {
+            if: "beliefs['weather.cloudCoverage'] > 80.0"
+            then: "setBelief('outside.overcast', true)"
+            else: "setBelief('outside.overcast', false)"
+        },
+        {
+            if: "beliefs['outside.hot'] and beliefs['weather.humidity'] > 80 and beliefs['weather.windsSpeed'] < 5.0"
+            then: "setBelief('outside.muggy', true)"
+            else: "setBelief('outside.muggy', false)"
+        },
+        {
+            if: "beliefs['outside.niceTemp'] and not (beliefs['outside.muggy'] or beliefs['outside.windy'] or beliefs['outside.overcast'])"
             then: "setBelief('outside.comfortable', true)"
             else: "setBelief('outside.comfortable', false)"
         },
