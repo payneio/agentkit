@@ -24,6 +24,10 @@ func New(config *ActuatorConfig, actions chan *datatypes.Action) Actuator {
 			Label: config.Label,
 			In:    actions,
 		}
+	case `speak`:
+		return &Speak{
+			Label: config.Label,
+		}
 	}
 
 	fmt.Println(`Unknown actuator type: ` + config.Type)

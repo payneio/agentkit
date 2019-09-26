@@ -32,6 +32,11 @@ actuators: [
         label: "echo"
     },
     {
+        type: "speak"
+        label: "speak"
+        program: "espeak"
+    },
+    {
         type: "SMS"
         label: "textmsg"
         provider: "T-Mobile"
@@ -78,7 +83,9 @@ mind: {
         },
         {
             if: "beliefs['outside.comfortable'] == true"
-            then: "SMS(textmsg, beliefs.person.paul.phone, 'Go Outside!')"
+            then: "action('speak', 'It's nice out. You should go outside.')"
+            //then: "SMS(textmsg, beliefs.person.paul.phone, 'Go Outside!')"
+            else: "action('speak', 'Code away.')"
         }
     ],
     beliefs: [

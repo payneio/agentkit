@@ -18,12 +18,14 @@ func (dispatch *ActionDispatch) Start() {
 
 		for {
 			action := <-dispatch.Actions
+			fmt.Printf("Taking action: %v\n", action)
 
 			labelSegs := strings.Split(action.Label, `.`)
 
 			actuatorKey := labelSegs[0]
 			actuator := dispatch.actuatorMap[actuatorKey]
 			if actuator == nil {
+				fmt.Printf("No actuator with the name %s registered.\n", actuatorKey)
 				continue
 			}
 			actuator.Actuate(action)

@@ -2,60 +2,15 @@ package ca
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
-	"agentkit/pkg/agentkit/minds/beliefs"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
 
 	"regexp"
 
 	"github.com/antonmedv/expr"
 )
-
-type CARule struct {
-	If   string
-	Then string
-	Else string
-}
-
-type Mind struct {
-	Percepts chan *datatypes.Percept
-	Actions  chan *datatypes.Action
-	Beliefs  beliefs.Beliefs
-	Rules    []CARule
-}
-
-func (m *Mind) GetBeliefs() beliefs.Beliefs {
-	return m.Beliefs
-}
-
-func (m *Mind) Start() {
-
-	fmt.Println(`Condition-Action mind is waking.`)
-
-	// agent cycle
-	go func(m *Mind) {
-
-		for {
-			percept := <-m.Percepts
-
-			// Form a belief about this percept
-			_ = m.Beliefs.Perceive(percept)
-
-			// Eval actions based on whether condition is met or not
-			fmt.Println(`Received percept: ` + percept.Label)
-			for _, rule := range m.Rules {
-				if m.EvalCondition(rule.If) {
-					m.EvalAction(rule.Then)
-				} else {
-					m.EvalAction(rule.Else)
-				}
-			}
-
-		}
-
-	}(m)
-
-}
 
 func (m *Mind) EvalCondition(expression string) bool {
 
@@ -94,24 +49,41 @@ func (m *Mind) EvalAction(expression string) {
 	// Simple one for now as an example:
 
 	// Parse Action-string for `setBelief` actions
-	re := regexp.MustCompile(`setBelief\([\s']*([^']*)[\s']*,\s*(.*)\s*\)`)
+	re := regexp.MustCompile(`\s*([^(]*)\([\s']*([^']*)[\s']*,\s*(.*)\s*\)`)
 	matches := re.FindAllStringSubmatch(expression, -1)
 	for _, match := range matches {
 
-		key, sval := match[1], match[2]
+		action, label, sval := match[1], match[2], match[3]
+
+		fmt.Println(action, label, sval)
 
 		// Basic JSON-ish typing of the value
+
+		// FIXME: Currently have single quotes in config'd rules. But they
+		// are not handled like double quotes w/ JSON unmarshal. This just
+		// requotes the un-nested JSON value.
+		if strings.HasPrefix(sval, `'`) {
+			sval = fmt.Sprintf(`"%s"`, strings.Trim(sval, `'`))
+		}
+
 		var val interface{}
 		json.Unmarshal([]byte(sval), &val)
 
-		m.Beliefs.Set(key, val)
-	}
+		fmt.Println(val)
 
-	// Take an action
-	// action := &datatypes.Action{
-	// 	Label: `echo.` + percept.Label,
-	// 	Data:  percept.Data,
-	// 	TS:    time.Now(),
-	// }
-	// m.Actions <- action
+		switch action {
+		case `setBelief`:
+			m.Beliefs.Set(label, val)
+		case `action`:
+			// Take an action
+			action := &datatypes.Action{
+				Label: label,
+				Data:  val,
+				TS:    time.Now(),
+			}
+			fmt.Println(action)
+			m.Actions <- action
+		}
+
+	}
 }
