@@ -57,8 +57,6 @@ func (m *Mind) EvalAction(expression string) {
 		return
 	}
 
-	fmt.Printf("Action needs to be evaluated: %s\n", expression)
-
 	// TODO: Create some sort of action language
 	// Simple one for now as an example:
 
@@ -68,8 +66,6 @@ func (m *Mind) EvalAction(expression string) {
 	for _, match := range matches {
 
 		action, label, sval := match[1], match[2], match[3]
-
-		fmt.Println(action, label, sval)
 
 		// Basic JSON-ish typing of the value
 
@@ -83,8 +79,6 @@ func (m *Mind) EvalAction(expression string) {
 		var val interface{}
 		json.Unmarshal([]byte(sval), &val)
 
-		fmt.Println(val)
-
 		switch action {
 		case `setBelief`:
 			m.Beliefs.Set(label, val)
@@ -95,7 +89,6 @@ func (m *Mind) EvalAction(expression string) {
 				Data:  val,
 				TS:    time.Now(),
 			}
-			fmt.Println(action)
 			m.Actions <- action
 		}
 
