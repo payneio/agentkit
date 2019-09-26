@@ -1,7 +1,6 @@
 package minds
 
 import (
-	"agentkit/pkg/agentkit/belief"
 	"agentkit/pkg/agentkit/datatypes"
 	"fmt"
 	"time"
@@ -10,10 +9,10 @@ import (
 type LoopbackMind struct {
 	Percepts chan *datatypes.Percept
 	Actions  chan *datatypes.Action
-	Beliefs  *belief.Beliefs
+	Beliefs  Beliefs
 }
 
-func (m *LoopbackMind) GetBeliefs() *belief.Beliefs {
+func (m *LoopbackMind) GetBeliefs() Beliefs {
 	return m.Beliefs
 }
 

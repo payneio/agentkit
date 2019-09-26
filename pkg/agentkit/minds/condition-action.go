@@ -1,7 +1,6 @@
 package minds
 
 import (
-	"agentkit/pkg/agentkit/belief"
 	"agentkit/pkg/agentkit/datatypes"
 	"fmt"
 
@@ -17,11 +16,11 @@ type CARule struct {
 type CAMind struct {
 	Percepts chan *datatypes.Percept
 	Actions  chan *datatypes.Action
-	Beliefs  *belief.Beliefs
+	Beliefs  Beliefs
 	Rules    []CARule
 }
 
-func (m *CAMind) GetBeliefs() *belief.Beliefs {
+func (m *CAMind) GetBeliefs() Beliefs {
 	return m.Beliefs
 }
 
@@ -61,11 +60,9 @@ func (m *CAMind) EvalCondition(expression string) bool {
 	// Prepare the environment for condition evaluation.
 	// This is done on every condition to allow for simple cascading rules.
 	env := map[string]interface{}{
-		`Belief`: func(k string) interface{} {
-			return m.Beliefs.Get(k)
-		},
+		`beliefs`: m.Beliefs.MSI(),
 	}
-
+	fmt.Printf("%#v", env)
 	// Evaluate
 	out, err := expr.Eval(expression, expr.Env(env))
 	if err != nil {

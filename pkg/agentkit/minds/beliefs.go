@@ -1,16 +1,22 @@
-package belief
+package minds
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
 	"fmt"
 )
 
-type Config struct {
+type BeliefsConfig struct {
 	Persistence string
 }
 
-type Beliefs struct {
-	config *Config
+type Beliefs interface {
+	Perceive(*datatypes.Percept) bool
+	Get(string) interface{}
+	MSI() map[string]interface{}
+}
+
+type BasicBeliefs struct {
+	config *BeliefsConfig
 
 	// TODO: This is the simplest possible belief repository. The next
 	// version should be a tree or a graph. This is not thread-safe, which
@@ -20,7 +26,7 @@ type Beliefs struct {
 
 // Perceive allows the beliefs to be modified based on the perception. Returns
 // whether or not the existing belief has been modified.
-func (b *Beliefs) Perceive(p *datatypes.Percept) (modified bool) {
+func (b *BasicBeliefs) Perceive(p *datatypes.Percept) (modified bool) {
 	modified = false
 	if b.facts[p.Label] != p.Data {
 		modified = true
@@ -29,7 +35,7 @@ func (b *Beliefs) Perceive(p *datatypes.Percept) (modified bool) {
 	return
 }
 
-func (b *Beliefs) Get(key string) interface{} {
+func (b *BasicBeliefs) Get(key string) interface{} {
 	val, ok := b.facts[key]
 	if ok {
 		return val
@@ -38,15 +44,15 @@ func (b *Beliefs) Get(key string) interface{} {
 	}
 }
 
-func (b *Beliefs) MSI() map[string]interface{} {
+func (b *BasicBeliefs) MSI() map[string]interface{} {
 	return b.facts
 }
 
-func New(config *Config) *Beliefs {
+func NewBasicBeliefs(config *BeliefsConfig) Beliefs {
 
 	fmt.Println(`I am forming beliefs.`)
 
-	return &Beliefs{
+	return &BasicBeliefs{
 		config: config,
 		facts:  make(map[string]interface{}),
 	}

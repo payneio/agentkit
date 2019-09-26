@@ -4,7 +4,6 @@ import (
 	"agentkit/pkg/agentkit"
 	"agentkit/pkg/agentkit/actuators"
 	kactuators "agentkit/pkg/agentkit/actuators"
-	"agentkit/pkg/agentkit/belief"
 	"agentkit/pkg/agentkit/central"
 	"agentkit/pkg/agentkit/datatypes"
 	"agentkit/pkg/agentkit/minds"
@@ -144,16 +143,13 @@ func New(config *cue.Instance) (*Agent, error) {
 	actionDispatch := agentkit.NewActionDispatch(actions)
 	actionDispatch.RegisterAll(actuators)
 
-	// Beliefs
-	beliefs := belief.New(&belief.Config{})
-
 	// Mind
 	var mindConfig *minds.Config
 	err = config.Lookup(`mind`).Decode(&mindConfig)
 	if err != nil {
 		return nil, err
 	}
-	mind := minds.New(mindConfig, percepts, actions, beliefs)
+	mind := minds.New(mindConfig, percepts, actions)
 
 	// Central connection
 	if agentData.Central.Address == "" {
