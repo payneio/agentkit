@@ -36,12 +36,8 @@ func (m *Mind) Start() {
 			m.Actions <- action
 
 			// Form a belief about this percept
-			updatedBeliefs := m.Beliefs.Perceive(percept)
+			m.Beliefs.Perceive(percept)
 
-			// Optionally, take an action based on changing beliefs.
-			if updatedBeliefs {
-				//fmt.Println("Updated belief.")
-			}
 		}
 
 	}(m)

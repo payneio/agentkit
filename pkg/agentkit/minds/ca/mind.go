@@ -34,10 +34,9 @@ func (m *Mind) Start() {
 			percept := <-m.Percepts
 
 			// Form a belief about this percept
-			_ = m.Beliefs.Perceive(percept)
+			m.Beliefs.Perceive(percept)
 
 			// Eval actions based on whether condition is met or not
-			fmt.Println(`Received percept: ` + percept.Label)
 			for _, rule := range m.Rules {
 				if m.EvalCondition(rule.If) {
 					m.EvalAction(rule.Then)

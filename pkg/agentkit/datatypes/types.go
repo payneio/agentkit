@@ -28,3 +28,10 @@ type Agent struct {
 	Address string  `json:"address"`
 	Central Central `json:"central"`
 }
+
+type Belief struct {
+	ID        string      `json:"id"`
+	Data      interface{} `json:"data"`
+	UpdatedAt time.Time   `json:"updatedAt"`
+	ChangedAt time.Time   `json:"changedAt"`
+}

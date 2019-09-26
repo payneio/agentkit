@@ -52,45 +52,47 @@ mind: {
     type: "condition-action",
     rules: [
         {
-            if: "beliefs['weather.temp'] > 76"
+            if: "belief('weather.temp') > 76"
             then: "setBelief('outside.hot', true)"
             else: "setBelief('outside.hot, false)"
         },
         {
-            if: "beliefs['weather.temp'] < 60"
+            if: "belief('weather.temp') < 60"
             then: "setBelief('outside.cold', true)"
             else: "setBelief('outside.cold, false)"
         },
         {
-            if: "not(beliefs['outside.cold'] or beliefs['outside.hot'])"
+            if: "not(belief('outside.cold') or belief('outside.hot'))"
             then: "setBelief('outside.niceTemp', true)"
             else: "setBelief('outside.niceTemp, false)"
         },
         {
-            if: "beliefs['weather.windSpeed'] > 15.0"
+            if: "belief('weather.windSpeed') > 15.0"
             then: "setBelief('outside.windy', true)"
             else: "setBelief('outside.windy', false)"
         },
         {
-            if: "beliefs['weather.cloudCoverage'] > 80.0"
+            if: "belief('weather.cloudCoverage') > 80.0"
             then: "setBelief('outside.overcast', true)"
             else: "setBelief('outside.overcast', false)"
         },
         {
-            if: "beliefs['outside.hot'] and beliefs['weather.humidity'] > 80 and beliefs['weather.windsSpeed'] < 5.0"
+            if: "belief('outside.hot') and belief('weather.humidity') > 80 and belief('weather.windsSpeed') < 5.0"
             then: "setBelief('outside.muggy', true)"
             else: "setBelief('outside.muggy', false)"
         },
         {
-            if: "beliefs['outside.niceTemp'] and not (beliefs['outside.muggy'] or beliefs['outside.windy'] or beliefs['outside.overcast'])"
+            if: "belief('outside.niceTemp') and not (belief('outside.muggy') or belief('outside.windy') or belief('outside.overcast'))"
             then: "setBelief('outside.comfortable', true)"
             else: "setBelief('outside.comfortable', false)"
         },
         {
-            if: "beliefs['outside.comfortable'] == true"
+            if: "changed_belief('outside.comfortable') and belief('outside.comfortable') == true"
             then: "action('speak', 'It's nice out. You should go outside.')"
-            //then: "SMS(textmsg, beliefs.person.paul.phone, 'Go Outside!')"
-            else: "action('speak', 'Code away.')"
+        },
+        {
+            if: "changed_belief('outside.comfortable') and belief('outside.comfortable') == false"
+            then: "action('speak', 'Code away.')"
         }
     ],
     beliefs: [

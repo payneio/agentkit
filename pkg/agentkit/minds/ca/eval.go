@@ -18,8 +18,22 @@ func (m *Mind) EvalCondition(expression string) bool {
 	// This is done on every condition to allow for simple cascading rules.
 	env := map[string]interface{}{
 		`beliefs`: m.Beliefs.MSI(),
-		`setBelief`: func(key string, value interface{}) {
-			m.Beliefs.Set(key, value)
+		`belief`: func(key string) interface{} {
+			belief := m.Beliefs.Get(key)
+			if belief == nil {
+				return nil
+			}
+			return belief.Data
+		},
+		`changed_belief`: func(key string) bool {
+			belief := m.Beliefs.Get(key)
+			if belief == nil {
+				return false
+			}
+			if time.Now().Before(belief.ChangedAt.Add(1 * time.Second)) {
+				return true
+			}
+			return false
 		},
 	}
 
