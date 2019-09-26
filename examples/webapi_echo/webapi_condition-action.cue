@@ -34,7 +34,12 @@ actuators: [
     {
         type: "speak"
         label: "speak"
-        program: "espeak"
+        config: {
+            program: "espeak"
+            programConfiguration: {
+                voice: "en-us+f3"
+            }
+        }
     },
     {
         type: "SMS"

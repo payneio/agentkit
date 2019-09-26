@@ -11,7 +11,9 @@ This actuator allows an agent to speak.
 */
 
 type Speak struct {
-	Label string
+	Label                string
+	Program              string
+	ProgramConfiguration map[string]interface{}
 }
 
 func (a *Speak) GetLabel() string {
@@ -20,8 +22,6 @@ func (a *Speak) GetLabel() string {
 
 func (a *Speak) Actuate(action *datatypes.Action) {
 
-	fmt.Printf("Speaking: %v\n", action.Data)
-
 	phrase, ok := action.Data.(string)
 	if !ok {
 		return
@@ -29,8 +29,17 @@ func (a *Speak) Actuate(action *datatypes.Action) {
 
 	// TODO: Need to configure multiple speach systems and check for their
 	// existence.
-	cmd := exec.Command("espeak", phrase)
-	_ = cmd.Run()
+	switch a.Program {
+	case `espeak`:
+		voice := `default`
+		if voiceConfig, ok := a.ProgramConfiguration[`voice`]; ok {
+			voice = voiceConfig.(string)
+		}
+		cmd := exec.Command("espeak", "-v", voice, phrase)
+		_ = cmd.Run()
+	default:
+		// Voice configuration program not recognized... just echo
+		fmt.Println(action)
+	}
 
-	fmt.Println(action)
 }
