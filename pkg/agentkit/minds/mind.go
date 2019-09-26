@@ -2,17 +2,20 @@ package minds
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
+	"agentkit/pkg/agentkit/minds/beliefs"
+	"agentkit/pkg/agentkit/minds/ca"
+	"agentkit/pkg/agentkit/minds/loopback"
 	"fmt"
 )
 
 type Mind interface {
 	Start()
-	GetBeliefs() Beliefs
+	GetBeliefs() beliefs.Beliefs
 }
 
 type Config struct {
 	Type  string
-	Rules []CARule
+	Rules []ca.CARule
 }
 
 func New(
@@ -22,17 +25,17 @@ func New(
 
 	switch config.Type {
 	case `condition-action`:
-		return &CAMind{
+		return &ca.Mind{
 			Percepts: percepts,
 			Actions:  actions,
 			Rules:    config.Rules,
-			Beliefs:  NewBasicBeliefs(nil),
+			Beliefs:  beliefs.NewBasicBeliefs(nil),
 		}
 	case `loopback`:
-		return &LoopbackMind{
+		return &loopback.Mind{
 			Percepts: percepts,
 			Actions:  actions,
-			Beliefs:  NewBasicBeliefs(nil),
+			Beliefs:  beliefs.NewBasicBeliefs(nil),
 		}
 	}
 

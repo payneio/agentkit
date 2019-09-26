@@ -1,27 +1,28 @@
-package minds
+package loopback
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
+	"agentkit/pkg/agentkit/minds/beliefs"
 	"fmt"
 	"time"
 )
 
-type LoopbackMind struct {
+type Mind struct {
 	Percepts chan *datatypes.Percept
 	Actions  chan *datatypes.Action
-	Beliefs  Beliefs
+	Beliefs  beliefs.Beliefs
 }
 
-func (m *LoopbackMind) GetBeliefs() Beliefs {
+func (m *Mind) GetBeliefs() beliefs.Beliefs {
 	return m.Beliefs
 }
 
-func (m *LoopbackMind) Start() {
+func (m *Mind) Start() {
 
 	fmt.Println(`Loopback mind is waking.`)
 
 	// agent cycle
-	go func(m *LoopbackMind) {
+	go func(m *Mind) {
 
 		for {
 			percept := <-m.Percepts

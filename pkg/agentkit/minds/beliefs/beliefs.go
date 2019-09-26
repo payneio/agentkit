@@ -1,4 +1,4 @@
-package minds
+package beliefs
 
 import (
 	"agentkit/pkg/agentkit/datatypes"

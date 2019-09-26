@@ -1,7 +1,8 @@
-package minds
+package ca
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
+	"agentkit/pkg/agentkit/minds/beliefs"
 	"encoding/json"
 	"fmt"
 
@@ -16,23 +17,23 @@ type CARule struct {
 	Else string
 }
 
-type CAMind struct {
+type Mind struct {
 	Percepts chan *datatypes.Percept
 	Actions  chan *datatypes.Action
-	Beliefs  Beliefs
+	Beliefs  beliefs.Beliefs
 	Rules    []CARule
 }
 
-func (m *CAMind) GetBeliefs() Beliefs {
+func (m *Mind) GetBeliefs() beliefs.Beliefs {
 	return m.Beliefs
 }
 
-func (m *CAMind) Start() {
+func (m *Mind) Start() {
 
 	fmt.Println(`Condition-Action mind is waking.`)
 
 	// agent cycle
-	go func(m *CAMind) {
+	go func(m *Mind) {
 
 		for {
 			percept := <-m.Percepts
@@ -56,7 +57,7 @@ func (m *CAMind) Start() {
 
 }
 
-func (m *CAMind) EvalCondition(expression string) bool {
+func (m *Mind) EvalCondition(expression string) bool {
 
 	// Prepare the environment for condition evaluation.
 	// This is done on every condition to allow for simple cascading rules.
@@ -82,7 +83,7 @@ func (m *CAMind) EvalCondition(expression string) bool {
 	return yesno
 }
 
-func (m *CAMind) EvalAction(expression string) {
+func (m *Mind) EvalAction(expression string) {
 	if expression == "" {
 		return
 	}
