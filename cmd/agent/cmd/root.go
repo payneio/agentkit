@@ -3,13 +3,13 @@ package cmd
 import (
 	"agentkit/pkg/agentkit/agent"
 	"agentkit/pkg/agentkit/util"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"cuelang.org/go/cue"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +26,7 @@ var rootCmd = &cobra.Command{
 		configPath, _ := cmd.Flags().GetString("config")
 		configData, err := ioutil.ReadFile(configPath)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			return
 		}
 
@@ -34,7 +34,7 @@ var rootCmd = &cobra.Command{
 		var r cue.Runtime
 		config, err := r.Compile("agent", configData)
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err)
 			return
 		}
 
@@ -51,7 +51,7 @@ var rootCmd = &cobra.Command{
 		// pidFilepath := path.Join(workdir, name)
 		// err = ioutil.WriteFile(pidFilepath, []byte(strconv.Itoa(pid)), 0644)
 		// if err != nil {
-		// 	fmt.Println(err)
+		// 	log.Error(err)
 		// 	return
 		// }
 		// defer os.Remove(pidFilepath)
@@ -76,10 +76,10 @@ var rootCmd = &cobra.Command{
 		}
 		config, _ = config.Fill(agentConfig, `_agent`)
 
-		fmt.Printf("Agent %s rezzing.\n", name)
+		log.WithFields(log.Fields{`name`: name}).Info("Agent rezzing.")
 		agent, err := agent.New(config)
 		if err != nil {
-			fmt.Print(err)
+			log.Error(err)
 			return
 		}
 
@@ -88,7 +88,7 @@ var rootCmd = &cobra.Command{
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 		go func() {
 			<-c
-			fmt.Println(`Goodbye. --` + name)
+			log.Info(`Goodbye. --` + name)
 			//os.Remove(pidFilepath)
 			os.Exit(-1)
 		}()
@@ -102,7 +102,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 }

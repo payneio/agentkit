@@ -3,7 +3,8 @@ package ca
 import (
 	"agentkit/pkg/agentkit/datatypes"
 	"agentkit/pkg/agentkit/minds/beliefs"
-	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type CARule struct {
@@ -25,7 +26,7 @@ func (m *Mind) GetBeliefs() beliefs.Beliefs {
 
 func (m *Mind) Start() {
 
-	fmt.Println(`Condition-Action mind is waking.`)
+	log.Info(`Condition-Action mind is waking.`)
 
 	// agent cycle
 	go func(m *Mind) {

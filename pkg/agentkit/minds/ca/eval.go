@@ -10,6 +10,7 @@ import (
 	"regexp"
 
 	"github.com/antonmedv/expr"
+	log "github.com/sirupsen/logrus"
 )
 
 func (m *Mind) EvalCondition(expression string) bool {
@@ -40,13 +41,17 @@ func (m *Mind) EvalCondition(expression string) bool {
 	// Evaluate
 	out, err := expr.Eval(expression, env)
 	if err != nil {
-		fmt.Printf("Could not evaluate condition expression. err = %v\n", err)
+		log.WithFields(
+			log.Fields{
+				`err`:        err,
+				`expression`: expression,
+			}).Error("Could not evaluate condition expression.")
 	}
 
 	// Make sure result is a boolean
 	yesno, ok := out.(bool)
 	if !ok {
-		fmt.Printf("Condition did not evaluate to boolean. expression = %s\n", expression)
+		log.WithFields(log.Fields{`expression`: expression}).Error("Condition did not evaluate to boolean.")
 	}
 
 	return yesno

@@ -2,7 +2,8 @@ package actuators
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
-	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type StdOut struct {
@@ -15,5 +16,5 @@ func (a *StdOut) GetLabel() string {
 }
 
 func (a *StdOut) Actuate(action *datatypes.Action) {
-	fmt.Println(action)
+	log.Info(action)
 }

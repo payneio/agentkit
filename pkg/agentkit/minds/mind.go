@@ -5,7 +5,8 @@ import (
 	"agentkit/pkg/agentkit/minds/beliefs"
 	"agentkit/pkg/agentkit/minds/ca"
 	"agentkit/pkg/agentkit/minds/loopback"
-	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Mind interface {
@@ -39,6 +40,6 @@ func New(
 		}
 	}
 
-	fmt.Println(`Unkown mind type.`)
+	log.Info(`Unkown mind type.`)
 	return nil
 }

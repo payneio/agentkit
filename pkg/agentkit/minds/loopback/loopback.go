@@ -3,8 +3,9 @@ package loopback
 import (
 	"agentkit/pkg/agentkit/datatypes"
 	"agentkit/pkg/agentkit/minds/beliefs"
-	"fmt"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Mind struct {
@@ -19,7 +20,7 @@ func (m *Mind) GetBeliefs() beliefs.Beliefs {
 
 func (m *Mind) Start() {
 
-	fmt.Println(`Loopback mind is waking.`)
+	log.Info(`Loopback mind is waking.`)
 
 	// agent cycle
 	go func(m *Mind) {

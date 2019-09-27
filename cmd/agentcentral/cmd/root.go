@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
 	"agentkit/pkg/agentkit/central"
 
 	"cuelang.org/go/cue"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +32,7 @@ var rootCmd = &cobra.Command{
 		if configPath != "" {
 			configData, err = ioutil.ReadFile(configPath)
 			if err != nil {
-				fmt.Println(err)
+				log.Error(err)
 				return
 			}
 		}
@@ -40,7 +40,7 @@ var rootCmd = &cobra.Command{
 		// Compile configuration
 		config, err = r.Compile("agent", configData)
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err)
 			return
 		}
 
@@ -61,7 +61,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 }

@@ -2,7 +2,8 @@ package sensors
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
-	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Sensor is anything that can receive or generate data for the agent.
@@ -37,6 +38,6 @@ func New(config *Config, out chan *datatypes.Percept) Sensor {
 	case `webapi`:
 		return NewWebAPISensor(config, out)
 	}
-	fmt.Println(`Unknown sensor type.`)
+	log.Info(`Unknown sensor type.`)
 	return nil
 }

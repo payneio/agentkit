@@ -2,8 +2,9 @@ package actuators
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
-	"fmt"
 	"os/exec"
+
+	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -39,7 +40,7 @@ func (a *Speak) Actuate(action *datatypes.Action) {
 		_ = cmd.Run()
 	default:
 		// Voice configuration program not recognized... just echo
-		fmt.Println(action)
+		log.Info(action)
 	}
 
 }

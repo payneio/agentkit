@@ -2,7 +2,8 @@ package actuators
 
 import (
 	"agentkit/pkg/agentkit/datatypes"
-	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Actuator is anything that can take actions.
@@ -32,14 +33,14 @@ func New(config *ActuatorConfig, actions chan *datatypes.Action) Actuator {
 		program, ok := config.Config[`program`]
 		// TODO: Can avoid this with CUE validation
 		if !ok {
-			fmt.Println("Speak actuator must have a program set.")
+			log.Info("Speak actuator must have a program set.")
 		}
 
 		var programConfig map[string]interface{}
 		if programData, cok := config.Config[`programConfiguration`]; cok {
 			var tok bool
 			if programConfig, tok = programData.(map[string]interface{}); !tok {
-				fmt.Println("Invalid speak program config.")
+				log.Info("Invalid speak program config.")
 			}
 		}
 
@@ -53,6 +54,6 @@ func New(config *ActuatorConfig, actions chan *datatypes.Action) Actuator {
 		return nil
 	}
 
-	fmt.Println(`Unknown actuator type: ` + config.Type)
+	log.WithFields(log.Fields{`type`: config.Type}).Error(`Unknown actuator type`)
 	return nil
 }

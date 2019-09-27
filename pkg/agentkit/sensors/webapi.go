@@ -3,11 +3,11 @@ package sensors
 import (
 	"agentkit/pkg/agentkit/datatypes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/objx"
 )
 
@@ -24,14 +24,14 @@ func (s *WebAPI) Wait() {
 func (s *WebAPI) doHTTP() ([]byte, objx.Map) {
 	resp, err := http.Get(s.Config.Request.URL)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		return nil, nil
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		return nil, nil
 	}
 
@@ -79,7 +79,7 @@ func (s *WebAPI) Start() {
 				json.Unmarshal(body, &jsonBody)
 				json, err := json.Marshal(jsonBody)
 				if err != nil {
-					fmt.Println(`Failed marshalling JSON body.`)
+					log.Info(`Failed marshalling JSON body.`)
 				}
 
 				sensor.Out <- &datatypes.Percept{
@@ -104,7 +104,7 @@ func (s *WebAPI) Start() {
 
 	}(s)
 
-	fmt.Println("WebAPI sensor started.")
+	log.Info("WebAPI sensor started.")
 }
 
 func NewWebAPISensor(config *Config, out chan *datatypes.Percept) *WebAPI {

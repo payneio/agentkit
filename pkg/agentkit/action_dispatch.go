@@ -3,8 +3,9 @@ package agentkit
 import (
 	"agentkit/pkg/agentkit/actuators"
 	"agentkit/pkg/agentkit/datatypes"
-	"fmt"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type ActionDispatch struct {
@@ -18,14 +19,14 @@ func (dispatch *ActionDispatch) Start() {
 
 		for {
 			action := <-dispatch.Actions
-			fmt.Printf("Taking action: %v\n", action)
+			log.WithFields(log.Fields{`action`: action}).Info("Taking action.")
 
 			labelSegs := strings.Split(action.Label, `.`)
 
 			actuatorKey := labelSegs[0]
 			actuator := dispatch.actuatorMap[actuatorKey]
 			if actuator == nil {
-				fmt.Printf("No actuator with the name %s registered.\n", actuatorKey)
+				log.WithFields(log.Fields{`name`: actuatorKey}).Error("No actuator with this name.")
 				continue
 			}
 			actuator.Actuate(action)
@@ -37,7 +38,7 @@ func (dispatch *ActionDispatch) Start() {
 
 func (dispatch *ActionDispatch) Register(actuator actuators.Actuator) {
 	dispatch.actuatorMap[actuator.GetLabel()] = actuator
-	fmt.Println(`Registered actuator: ` + actuator.GetLabel())
+	log.Info(`Registered actuator: ` + actuator.GetLabel())
 }
 
 func (dispatch *ActionDispatch) RegisterAll(actuators []actuators.Actuator) {

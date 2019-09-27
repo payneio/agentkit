@@ -3,8 +3,9 @@ package beliefs
 import (
 	"agentkit/pkg/agentkit/datatypes"
 	"encoding/json"
-	"fmt"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type BeliefsConfig struct {
@@ -74,7 +75,7 @@ func (b *BasicBeliefs) MSI() map[string]interface{} {
 
 func NewBasicBeliefs(config *BeliefsConfig) Beliefs {
 
-	fmt.Println(`I am forming beliefs.`)
+	log.Info(`I am forming beliefs.`)
 
 	return &BasicBeliefs{
 		config: config,

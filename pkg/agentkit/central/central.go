@@ -3,13 +3,13 @@ package central
 import (
 	"agentkit/pkg/agentkit/datatypes"
 	"agentkit/pkg/agentkit/util"
-	"fmt"
 	"io/ioutil"
 	"strconv"
 	"time"
 
 	"cuelang.org/go/cue"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 type Agent struct {
@@ -36,7 +36,7 @@ func (c *Central) Spin() {
 			c.Port = util.FindFreeTCPPort()
 		}
 		portStr := strconv.Itoa(c.Port)
-		fmt.Println(`Central available on port ` + portStr)
+		log.Info(`Central available on port ` + portStr)
 		c.Webd.Run(`:` + portStr)
 	}()
 
@@ -51,7 +51,7 @@ func (c *Central) startAgentLivenessCheck() {
 		for {
 			now := time.Now()
 			for name, agent := range c.Agents {
-				fmt.Println(`liveness checking ` + agent.Name)
+				log.Info(`liveness checking ` + agent.Name)
 
 				if now.After(agent.Central.LastCheckin.Add(staleDuration)) {
 					agent.Central.Status = `stale`

@@ -17,6 +17,8 @@ import (
 
 	"cuelang.org/go/cue"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	ginlogrus "github.com/toorop/gin-logrus"
 )
 
 // Agent is an agent
@@ -82,7 +84,7 @@ func (agent *Agent) NotifyCentral() {
 	result, err := http.Post(url, `application/json`, bytes.NewBuffer(agentJSON))
 	if err != nil {
 		agent.Central.Status = `lost`
-		fmt.Printf(`Failed notifying Central. err = %s\n`, err)
+		log.WithFields(log.Fields{`err`: err}).Error(`Failed notifying Central.`)
 		return
 	}
 
@@ -94,7 +96,7 @@ func (agent *Agent) NotifyCentral() {
 	agent.Central.Status = `healthy`
 	agent.Central.LastCheckin = agentData.Central.LastCheckin
 
-	fmt.Println(`Notified Central.`)
+	log.Info(`Notified Central.`)
 }
 
 func New(config *cue.Instance) (*Agent, error) {
@@ -171,7 +173,8 @@ func New(config *cue.Instance) (*Agent, error) {
 	}
 
 	// JSON Web API
-	r := gin.Default()
+	r := gin.New()
+	r.Use(ginlogrus.Logger(log.New()), gin.Recovery())
 
 	// Turn off GIN logging
 	gin.SetMode(gin.ReleaseMode)
