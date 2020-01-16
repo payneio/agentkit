@@ -3,9 +3,12 @@ package cmd
 import (
 	"agentkit/pkg/agentkit/agent"
 	"agentkit/pkg/agentkit/util"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"runtime"
+	"strings"
 	"syscall"
 
 	"cuelang.org/go/cue"
@@ -21,6 +24,17 @@ var rootCmd = &cobra.Command{
 	Short: "Start a Sentinovo Agent",
 	Long:  `Start a Sentinovo Agent`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		// Logging
+		log.SetReportCaller(true)
+		log.New().Formatter = &log.TextFormatter{
+			CallerPrettyfier: func(f *runtime.Frame) (string, string) {
+				repopath := fmt.Sprintf("%s/src/github.com/bob", os.Getenv("GOPATH"))
+				filename := strings.Replace(f.File, repopath, "", -1)
+				return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", filename, f.Line)
+			},
+		}
+		log.SetFormatter(&log.JSONFormatter{})
 
 		// Read in configuration
 		configPath, _ := cmd.Flags().GetString("config")
